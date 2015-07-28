@@ -1,0 +1,20 @@
+{
+  "name": "bbqueue/queue",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Cees-Jan Kiewiet",
+      "email": "ceesjank@gmail.com",
+      "homepage": "http://wyrihaximus.net/"
+    }
+  ],
+  "require": {
+    "react/event-loop": "^0.4.1",
+    "eleme/timer": "^0.1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "WyriHaximus\\React\\Inspector\\": "src/"
+    }
+  }
+}
