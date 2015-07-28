@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "93d3a73854630f79d9e5eb82cca6ad18",
+    "hash": "28e6d75e9efb726776b46fd5fb42bddc",
     "packages": [
         {
             "name": "eleme/timer",
