@@ -285,7 +285,7 @@ class LoopDecorator implements LoopInterface
         ];
     }
 
-    public function getReccordings()
+    public function getRecordings()
     {
         return $this->timers;
     }
