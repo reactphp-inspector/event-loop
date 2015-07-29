@@ -2,7 +2,6 @@
 
 namespace WyriHaximus\React\Inspector;
 
-use Eleme\Timer\Timer;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 
@@ -18,6 +17,9 @@ class LoopDecorator implements LoopInterface
      */
     protected $timers = [];
 
+    /**
+     * @param LoopInterface $loop
+     */
     public function __construct(LoopInterface $loop)
     {
         $this->loop = $loop;
@@ -31,24 +33,20 @@ class LoopDecorator implements LoopInterface
      */
     public function addReadStream($stream, callable $listener)
     {
-        $timer = new Timer();
         $timerData = [
             'type' => 'stream_read',
             'hash' => spl_object_hash($stream),
-            'timer' => $timer,
             'run' => [],
         ];
-        $timer->start();
+        $timerData['timer'] = Timer::start();
         $this->loop->addReadStream($stream, function ($stream, $loop) use ($listener, &$timerData) {
-            $timer = new Timer();
-            $timerData['run'][] = [
-                'timer' => $timer,
-            ];
-            $timer->start();
+            $run = [];
+            $run['timer'] = Timer::start();
             $listener($stream, $loop);
-            $timer->stop();
+            $run['timer']->stop();
+            $timerData['run'][] = $run;
         });
-        $timer->stop();
+        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
     }
 
@@ -60,24 +58,20 @@ class LoopDecorator implements LoopInterface
      */
     public function addWriteStream($stream, callable $listener)
     {
-        $timer = new Timer();
         $timerData = [
             'type' => 'stream_write',
             'hash' => spl_object_hash($stream),
-            'timer' => $timer,
             'run' => [],
         ];
-        $timer->start();
+        $timerData['timer'] = Timer::start();
         $this->loop->addReadStream($stream, function ($stream, $loop) use ($listener, &$timerData) {
-            $timer = new Timer();
-            $timerData['run'][] = [
-                'timer' => $timer,
-            ];
-            $timer->start();
+            $run = [];
+            $run['timer'] = Timer::start();
             $listener($stream, $loop);
-            $timer->stop();
+            $run['timer']->stop();
+            $timerData['run'][] = $run;
         });
-        $timer->stop();
+        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
     }
 
@@ -124,23 +118,20 @@ class LoopDecorator implements LoopInterface
      */
     public function addTimer($interval, callable $callback)
     {
-        $timer = new Timer();
         $timerData = [
             'type' => 'timer',
-            'timer' => $timer,
         ];
-        $timer->start();
+        $timerData['timer'] = Timer::start();
         $loopTimer = $this->loop->addTimer($interval, function (TimerInterface $loopTimer) use ($callback, &$timerData) {
-            $timer = new Timer();
-            $timerData['run'] = [
+            $run = [
                 'hash' => spl_object_hash($loopTimer),
-                'timer' => $timer,
             ];
-            $timer->start();
+            $run['timer'] = Timer::start();
             $callback($loopTimer);
-            $timer->stop();
+            $run['timer']->stop();
+            $timerData['run'] = $run;
         });
-        $timer->stop();
+        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
         return $loopTimer;
     }
@@ -158,24 +149,21 @@ class LoopDecorator implements LoopInterface
      */
     public function addPeriodicTimer($interval, callable $callback)
     {
-        $timer = new Timer();
         $timerData = [
             'type' => 'timer_periodic',
-            'timer' => $timer,
             'run' => [],
         ];
-        $timer->start();
+        $timerData['timer'] = Timer::start();
         $loopTimer = $this->loop->addPeriodicTimer($interval, function (TimerInterface $loopTimer) use ($callback, &$timerData) {
-            $timer = new Timer();
-            $timerData['run'][] = [
+            $run = [
                 'hash' => spl_object_hash($loopTimer),
-                'timer' => $timer,
             ];
-            $timer->start();
+            $run['timer'] = Timer::start();
             $callback($loopTimer);
-            $timer->stop();
+            $run['timer']->stop();
+            $timerData['run'][] = $run;
         });
-        $timer->stop();
+        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
         return $loopTimer;
     }
@@ -212,23 +200,19 @@ class LoopDecorator implements LoopInterface
      */
     public function nextTick(callable $listener)
     {
-        $timer = new Timer();
         $timerData = [
             'type' => 'tick_next',
-            'timer' => $timer,
         ];
-        $timer->start();
+        $timerData['timer'] = Timer::start();
         $loopTimer = $this->loop->nextTick(function () use ($listener, &$timerData) {
-            $timer = new Timer();
             $timerData['run'] = [
                 'hash' => spl_object_hash($listener),
-                'timer' => $timer,
             ];
-            $timer->start();
+            $timerData['run']['timer'] = Timer::start();
             $listener();
-            $timer->stop();
+            $timerData['run']['timer']->stop();
         });
-        $timer->stop();
+        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
         return $loopTimer;
     }
@@ -242,24 +226,19 @@ class LoopDecorator implements LoopInterface
      */
     public function futureTick(callable $listener)
     {
-
-        $timer = new Timer();
         $timerData = [
             'type' => 'tick_future',
-            'timer' => $timer,
         ];
-        $timer->start();
+        $timerData['timer'] = Timer::start();
         $loopTimer = $this->loop->futureTick(function () use ($listener, &$timerData) {
-            $timer = new Timer();
             $timerData['run'] = [
                 'hash' => spl_object_hash($listener),
-                'timer' => $timer,
             ];
-            $timer->start();
+            $timerData['run']['timer'] = Timer::start();
             $listener();
-            $timer->stop();
+            $timerData['run']['timer']->stop();
         });
-        $timer->stop();
+        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
         return $loopTimer;
     }
@@ -269,8 +248,7 @@ class LoopDecorator implements LoopInterface
      */
     public function tick()
     {
-        $timer = new Timer();
-        $timer->start();
+        $timer = Timer::start();
         $this->loop->tick();
         $timer->stop();
         $this->timers[] = [
@@ -284,8 +262,7 @@ class LoopDecorator implements LoopInterface
      */
     public function run()
     {
-        $timer = new Timer();
-        $timer->start();
+        $timer = Timer::start();
         $this->loop->run();
         $timer->stop();
         $this->timers[] = [
@@ -299,8 +276,7 @@ class LoopDecorator implements LoopInterface
      */
     public function stop()
     {
-        $timer = new Timer();
-        $timer->start();
+        $timer = Timer::start();
         $this->loop->stop();
         $timer->stop();
         $this->timers[] = [

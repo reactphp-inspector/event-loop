@@ -25,4 +25,4 @@ for ($i = 1; $i <= 3; $i++) {
 
 $loop->run();
 
-var_export((array) $loop->getReccordings());
+echo json_encode($loop->getReccordings());
