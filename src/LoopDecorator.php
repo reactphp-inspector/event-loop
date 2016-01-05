@@ -151,19 +151,16 @@ class LoopDecorator implements LoopInterface
     {
         $timerData = [
             'type' => 'timer_periodic',
-            'run' => [],
+            'timers' => [],
         ];
-        $timerData['timer'] = Timer::start();
         $loopTimer = $this->loop->addPeriodicTimer($interval, function (TimerInterface $loopTimer) use ($callback, &$timerData) {
-            $run = [
-                'hash' => spl_object_hash($loopTimer),
-            ];
+            $timerData['hash'] = spl_object_hash($loopTimer);
+            $run = [];
             $run['timer'] = Timer::start();
             $callback($loopTimer);
             $run['timer']->stop();
-            $timerData['run'][] = $run;
+            $timerData['timers'][] = $run;
         });
-        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
         return $loopTimer;
     }
@@ -202,17 +199,13 @@ class LoopDecorator implements LoopInterface
     {
         $timerData = [
             'type' => 'tick_next',
+            'hash' => spl_object_hash($listener),
         ];
-        $timerData['timer'] = Timer::start();
         $loopTimer = $this->loop->nextTick(function () use ($listener, &$timerData) {
-            $timerData['run'] = [
-                'hash' => spl_object_hash($listener),
-            ];
-            $timerData['run']['timer'] = Timer::start();
+            $timerData['timer'] = Timer::start();
             $listener();
-            $timerData['run']['timer']->stop();
+            $timerData['timer']->stop();
         });
-        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
         return $loopTimer;
     }
@@ -228,17 +221,13 @@ class LoopDecorator implements LoopInterface
     {
         $timerData = [
             'type' => 'tick_future',
+            'hash' => spl_object_hash($listener),
         ];
-        $timerData['timer'] = Timer::start();
         $loopTimer = $this->loop->futureTick(function () use ($listener, &$timerData) {
-            $timerData['run'] = [
-                'hash' => spl_object_hash($listener),
-            ];
-            $timerData['run']['timer'] = Timer::start();
+            $timerData['timer'] = Timer::start();
             $listener();
-            $timerData['run']['timer']->stop();
+            $timerData['timer']->stop();
         });
-        $timerData['timer']->stop();
         $this->timers[] = &$timerData;
         return $loopTimer;
     }
