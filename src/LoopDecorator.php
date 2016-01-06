@@ -120,10 +120,13 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
      */
     public function addPeriodicTimer($interval, callable $callback)
     {
-        $loopTimer = $this->loop->addPeriodicTimer($interval, function (TimerInterface $loopTimer) use ($callback, $interval) {
-            $this->emit('addPeriodicTimerTick', [$interval, $callback, $loopTimer]);
-            $callback($loopTimer);
-        });
+        $loopTimer = $this->loop->addPeriodicTimer(
+            $interval,
+            function (TimerInterface $loopTimer) use ($callback, $interval) {
+                $this->emit('addPeriodicTimerTick', [$interval, $callback, $loopTimer]);
+                $callback($loopTimer);
+            }
+        );
         $this->emit('addPeriodicTimer', [$interval, $callback, $loopTimer]);
         return $loopTimer;
     }
