@@ -11,6 +11,9 @@ class InfoProvider
      */
     protected $loop;
 
+    /**
+     * @var array
+     */
     protected $counters = [];
 
     /**
