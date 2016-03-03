@@ -60,6 +60,30 @@ class InfoProvider
                 $this->counters['timers']['periodic']['current']--;
             }
         });
+        $loop->on('addReadStream', function () {
+            $this->counters['streams']['read']['current']++;
+            $this->counters['streams']['total']['current']++;
+        });
+        $loop->on('addReadStreamTick', function () {
+            $this->counters['streams']['read']['ticks']++;
+            $this->counters['streams']['total']['ticks']++;
+        });
+        $loop->on('removeReadStream', function () {
+            $this->counters['streams']['read']['current']--;
+            $this->counters['streams']['total']['current']--;
+        });
+        $loop->on('addWriteStream', function () {
+            $this->counters['streams']['write']['current']++;
+            $this->counters['streams']['total']['current']++;
+        });
+        $loop->on('addWriteStreamTick', function () {
+            $this->counters['streams']['write']['ticks']++;
+            $this->counters['streams']['total']['ticks']++;
+        });
+        $loop->on('removeWriteStream', function () {
+            $this->counters['streams']['write']['current']--;
+            $this->counters['streams']['total']['current']--;
+        });
     }
 
     public function reset()
