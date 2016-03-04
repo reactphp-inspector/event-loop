@@ -65,6 +65,8 @@ class InfoProvider
         $loop->on('addReadStream', function () {
             $this->counters['streams']['read']['current']++;
             $this->counters['streams']['total']['current']++;
+            $this->counters['streams']['read']['total']++;
+            $this->counters['streams']['total']['total']++;
         });
         $loop->on('addReadStreamTick', function () {
             $this->counters['streams']['read']['ticks']++;
@@ -78,6 +80,8 @@ class InfoProvider
         $loop->on('addWriteStream', function () {
             $this->counters['streams']['write']['current']++;
             $this->counters['streams']['total']['current']++;
+            $this->counters['streams']['write']['total']++;
+            $this->counters['streams']['total']['total']++;
         });
         $loop->on('addWriteStreamTick', function () {
             $this->counters['streams']['write']['ticks']++;
