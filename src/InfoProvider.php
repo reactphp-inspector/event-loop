@@ -40,6 +40,7 @@ class InfoProvider
             $this->counters['ticks']['next']['current']--;
             $this->counters['ticks']['next']['ticks']++;
         });
+
         $loop->on('addTimer', function () {
             $this->counters['timers']['once']['current']++;
             $this->counters['timers']['once']['total']++;
@@ -60,6 +61,7 @@ class InfoProvider
                 $this->counters['timers']['periodic']['current']--;
             }
         });
+
         $loop->on('addReadStream', function () {
             $this->counters['streams']['read']['current']++;
             $this->counters['streams']['total']['current']++;
@@ -72,6 +74,7 @@ class InfoProvider
             $this->counters['streams']['read']['current']--;
             $this->counters['streams']['total']['current']--;
         });
+
         $loop->on('addWriteStream', function () {
             $this->counters['streams']['write']['current']++;
             $this->counters['streams']['total']['current']++;
