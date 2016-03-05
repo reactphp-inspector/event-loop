@@ -238,4 +238,72 @@ class InfoProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(1, $counters['streams']['write']['total']);
         $this->assertSame(1, $counters['streams']['total']['total']);
     }
+
+    public function testComplexReadWriteDuplexStreams()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(0, $counters['streams']['write']['current']);
+        $this->assertSame(0, $counters['streams']['total']['current']);
+        $this->assertSame(0, $counters['streams']['read']['total']);
+        $this->assertSame(0, $counters['streams']['write']['total']);
+        $this->assertSame(0, $counters['streams']['total']['total']);
+
+        $streamRead   = $this->createStream(self::STREAM_READ);
+        $streamWrite  = $this->createStream(self::STREAM_WRITE);
+        $streamDuplex = $this->createStream(self::STREAM_DUPLEX);
+
+        $this->loop->addReadStream($streamRead, function () {});
+        $this->loop->addWriteStream($streamWrite, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['streams']['read']['current']);
+        $this->assertSame(1, $counters['streams']['write']['current']);
+        $this->assertSame(2, $counters['streams']['total']['current']);
+        $this->assertSame(1, $counters['streams']['read']['total']);
+        $this->assertSame(1, $counters['streams']['write']['total']);
+        $this->assertSame(2, $counters['streams']['total']['total']);
+
+        $this->loop->addReadStream($streamDuplex, function () {});
+        $this->loop->addWriteStream($streamDuplex, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(2, $counters['streams']['read']['current']);
+        $this->assertSame(2, $counters['streams']['write']['current']);
+        $this->assertSame(3, $counters['streams']['total']['current']);
+        $this->assertSame(2, $counters['streams']['read']['total']);
+        $this->assertSame(2, $counters['streams']['write']['total']);
+        $this->assertSame(3, $counters['streams']['total']['total']);
+
+        $this->loop->removeReadStream($streamRead, function () {});
+        $this->loop->removeWriteStream($streamWrite, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['streams']['read']['current']);
+        $this->assertSame(1, $counters['streams']['write']['current']);
+        $this->assertSame(1, $counters['streams']['total']['current']);
+        $this->assertSame(2, $counters['streams']['read']['total']);
+        $this->assertSame(2, $counters['streams']['write']['total']);
+        $this->assertSame(3, $counters['streams']['total']['total']);
+
+        $this->loop->removeReadStream($streamDuplex, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(1, $counters['streams']['write']['current']);
+        $this->assertSame(1, $counters['streams']['total']['current']);
+        $this->assertSame(2, $counters['streams']['read']['total']);
+        $this->assertSame(2, $counters['streams']['write']['total']);
+        $this->assertSame(3, $counters['streams']['total']['total']);
+
+        $this->loop->removeWriteStream($streamDuplex, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(0, $counters['streams']['write']['current']);
+        $this->assertSame(0, $counters['streams']['total']['current']);
+        $this->assertSame(2, $counters['streams']['read']['total']);
+        $this->assertSame(2, $counters['streams']['write']['total']);
+        $this->assertSame(3, $counters['streams']['total']['total']);
+    }
 }

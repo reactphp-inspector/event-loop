@@ -17,6 +17,21 @@ class InfoProvider
     protected $counters = [];
 
     /**
+     * @var array
+     */
+    protected $streamsRead = [];
+
+    /**
+     * @var array
+     */
+    protected $streamsWrite = [];
+
+    /**
+     * @var array
+     */
+    protected $streamsDuplex = [];
+
+    /**
      * @param LoopDecorator $loop
      */
     public function __construct(LoopDecorator $loop)
@@ -62,34 +77,64 @@ class InfoProvider
             }
         });
 
-        $loop->on('addReadStream', function () {
-            $this->counters['streams']['read']['current']++;
-            $this->counters['streams']['total']['current']++;
+        $loop->on('addReadStream', function ($stream) {
+            $key = (int) $stream;
+
+            $this->streamsRead[$key] = $stream;
+            $this->streamsDuplex[$key] = $stream;
+
+            $this->counters['streams']['read']['current'] = count($this->streamsRead);
+            $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
             $this->counters['streams']['read']['total']++;
-            $this->counters['streams']['total']['total']++;
+            if (!isset($this->streamsWrite[$key])) {
+                $this->counters['streams']['total']['total']++;
+            }
         });
         $loop->on('readStreamTick', function () {
             $this->counters['streams']['read']['ticks']++;
             $this->counters['streams']['total']['ticks']++;
         });
-        $loop->on('removeReadStream', function () {
-            $this->counters['streams']['read']['current']--;
-            $this->counters['streams']['total']['current']--;
+        $loop->on('removeReadStream', function ($stream) {
+            $key = (int) $stream;
+
+            if (isset($this->streamsRead[$key])) {
+                unset($this->streamsRead[$key]);
+            }
+            if (isset($this->streamsDuplex[$key]) && !isset($this->streamsWrite[$key])) {
+                unset($this->streamsDuplex[$key]);
+            }
+            $this->counters['streams']['read']['current'] = count($this->streamsRead);
+            $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
         });
 
-        $loop->on('addWriteStream', function () {
-            $this->counters['streams']['write']['current']++;
-            $this->counters['streams']['total']['current']++;
+        $loop->on('addWriteStream', function ($stream) {
+            $key = (int) $stream;
+
+            $this->streamsWrite[$key] = $stream;
+            $this->streamsDuplex[$key] = $stream;
+
+            $this->counters['streams']['write']['current'] = count($this->streamsWrite);
+            $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
             $this->counters['streams']['write']['total']++;
-            $this->counters['streams']['total']['total']++;
+            if (!isset($this->streamsRead[$key])) {
+                $this->counters['streams']['total']['total']++;
+            }
         });
         $loop->on('writeStreamTick', function () {
             $this->counters['streams']['write']['ticks']++;
             $this->counters['streams']['total']['ticks']++;
         });
-        $loop->on('removeWriteStream', function () {
-            $this->counters['streams']['write']['current']--;
-            $this->counters['streams']['total']['current']--;
+        $loop->on('removeWriteStream', function ($stream) {
+            $key = (int) $stream;
+
+            if (isset($this->streamsWrite[$key])) {
+                unset($this->streamsWrite[$key]);
+            }
+            if (isset($this->streamsDuplex[$key]) && !isset($this->streamsRead[$key])) {
+                unset($this->streamsDuplex[$key]);
+            }
+            $this->counters['streams']['write']['current'] = count($this->streamsWrite);
+            $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
         });
     }
 
