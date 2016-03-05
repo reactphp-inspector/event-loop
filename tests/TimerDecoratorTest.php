@@ -32,5 +32,8 @@ class TimerDecoratorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertSame(true, $decoratedTimer->isPeriodic());
         $this->assertSame(true, $decoratedTimer->isActive());
+
+        $decoratedTimer->cancel();
+        Phake::verify($loop)->cancelTimer($timer);
     }
 }
