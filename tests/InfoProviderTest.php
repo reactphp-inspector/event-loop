@@ -35,6 +35,41 @@ class InfoProviderTest extends \PHPUnit_Framework_TestCase
         parent::tearDown();
     }
 
+    public function testResetTotals()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['ticks']['future']['total']);
+
+        $this->loop->futureTick(function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['ticks']['future']['total']);
+
+        $this->loop->run();
+
+        $this->infoProvider->resetTotals();
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['ticks']['future']['total']);
+    }
+
+    public function testResetTicks()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['ticks']['future']['ticks']);
+
+        $this->loop->futureTick(function () {});
+        $this->loop->run();
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['ticks']['future']['ticks']);
+
+        $this->infoProvider->resetTicks();
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['ticks']['future']['ticks']);
+    }
+
     public function testFutureTick()
     {
         $counters = $this->infoProvider->getCounters();
