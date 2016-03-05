@@ -3,6 +3,7 @@
 namespace WyriHaximus\React\Tests\Inspector;
 
 use Phake;
+use React\EventLoop\Factory;
 use WyriHaximus\React\Inspector\LoopDecorator;
 
 class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
@@ -139,8 +140,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testAddTimer()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
-        $timer = Phake::mock('React\EventLoop\Timer\TimerInterface');
+        $loop = Factory::create();
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -149,42 +149,39 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             'timerTick' => false,
         ];
 
-        $interval = 123;
+        $interval = 0.123;
         $listener = function ($timer) use (&$called) {
+            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
             $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
             $called['listener'] = true;
         };
         $decoratedLoop->on('addTimer', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
+            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
             $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
             $called['addTimer'] = true;
         });
         $decoratedLoop->on('timerTick', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
+            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
             $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
             $called['timerTick'] = true;
         });
 
-        Phake::when($loop)->addTimer($interval, $listener)->thenReturnCallback(function ($stream, $listener) use ($timer) {
-            $listener($timer);
-            return $timer;
-        });
-
         $decoratedLoop->addTimer($interval, $listener);
+
+        $decoratedLoop->run();
 
         foreach ($called as $key => $call) {
             $this->assertTrue($call, $key);
         }
-
-        Phake::verify($loop)->addTimer($interval, $listener);
     }
 
     public function testAddPeriodicTimer()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
-        $timer = Phake::mock('React\EventLoop\Timer\TimerInterface');
+        $loop = Factory::create();
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -193,36 +190,35 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             'periodicTimerTick' => false,
         ];
 
-        $interval = 123;
+        $interval = 0.123;
         $listener = function ($timer) use (&$called) {
+            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
             $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
             $called['listener'] = true;
+            $timer->cancel();
         };
-        $decoratedLoop->on('addPeriodicTimer', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener, $timer) {
+        $decoratedLoop->on('addPeriodicTimer', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
-            $this->assertSame($timer, $passedTimer);
+            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $passedTimer);
+            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $passedTimer);
             $called['addPeriodicTimer'] = true;
         });
-        $decoratedLoop->on('periodicTimerTick', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener, $timer) {
+        $decoratedLoop->on('periodicTimerTick', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
-            $this->assertSame($timer, $passedTimer);
+            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $passedTimer);
+            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $passedTimer);
             $called['periodicTimerTick'] = true;
-        });
-
-        Phake::when($loop)->addPeriodicTimer($interval, $listener)->thenReturnCallback(function ($stream, $listener) use ($timer) {
-            $listener($timer);
-            return $timer;
         });
 
         $decoratedLoop->addPeriodicTimer($interval, $listener);
 
+        $decoratedLoop->run();
+
         foreach ($called as $key => $call) {
             $this->assertTrue($call, $key);
         }
-
-        Phake::verify($loop)->addPeriodicTimer($interval, $listener);
     }
 
     public function testCancelTimer()

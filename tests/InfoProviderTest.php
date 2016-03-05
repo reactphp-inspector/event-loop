@@ -78,4 +78,54 @@ class InfoProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(1, $counters['ticks']['next']['total']);
         $this->assertSame(1, $counters['ticks']['next']['ticks']);
     }
+
+    public function testTimer()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['timers']['once']['current']);
+        $this->assertSame(0, $counters['timers']['once']['total']);
+        $this->assertSame(0, $counters['timers']['once']['ticks']);
+
+        $this->loop->addTimer(0.0001, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['timers']['once']['current']);
+        $this->assertSame(1, $counters['timers']['once']['total']);
+        $this->assertSame(0, $counters['timers']['once']['ticks']);
+
+        $this->loop->run();
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['timers']['once']['current']);
+        $this->assertSame(1, $counters['timers']['once']['total']);
+        $this->assertSame(1, $counters['timers']['once']['ticks']);
+    }
+
+    public function testPeriodicTimer()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['timers']['periodic']['current']);
+        $this->assertSame(0, $counters['timers']['periodic']['total']);
+        $this->assertSame(0, $counters['timers']['periodic']['ticks']);
+
+        $i = 1;
+        $this->loop->addPeriodicTimer(0.0001, function (TimerInterface $timer) use (&$i) {
+            if ($i === 3) {
+                $timer->cancel();
+            }
+            $i++;
+        });
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['timers']['periodic']['current']);
+        $this->assertSame(1, $counters['timers']['periodic']['total']);
+        $this->assertSame(0, $counters['timers']['periodic']['ticks']);
+
+        $this->loop->run();
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['timers']['periodic']['current']);
+        $this->assertSame(1, $counters['timers']['periodic']['total']);
+        $this->assertSame(3, $counters['timers']['periodic']['ticks']);
+    }
 }
