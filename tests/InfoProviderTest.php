@@ -11,6 +11,10 @@ use WyriHaximus\React\Inspector\LoopDecorator;
 
 class InfoProviderTest extends \PHPUnit_Framework_TestCase
 {
+    const STREAM_READ   = 'r+';
+    const STREAM_WRITE  = 'w+';
+    const STREAM_DUPLEX = 'a+';
+
     /**
      * @var LoopInterface
      */
@@ -20,6 +24,11 @@ class InfoProviderTest extends \PHPUnit_Framework_TestCase
      * @var InfoProvider
      */
     protected $infoProvider;
+
+    protected function createStream($mode)
+    {
+        return fopen('php://temp', $mode);
+    }
 
     public function setUp()
     {
@@ -162,5 +171,71 @@ class InfoProviderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(0, $counters['timers']['periodic']['current']);
         $this->assertSame(1, $counters['timers']['periodic']['total']);
         $this->assertSame(3, $counters['timers']['periodic']['ticks']);
+    }
+
+    public function testAddReadStream()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(0, $counters['streams']['write']['current']);
+        $this->assertSame(0, $counters['streams']['total']['current']);
+        $this->assertSame(0, $counters['streams']['read']['total']);
+        $this->assertSame(0, $counters['streams']['write']['total']);
+        $this->assertSame(0, $counters['streams']['total']['total']);
+
+        $stream = $this->createStream(self::STREAM_READ);
+
+        $this->loop->addReadStream($stream, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['streams']['read']['current']);
+        $this->assertSame(0, $counters['streams']['write']['current']);
+        $this->assertSame(1, $counters['streams']['total']['current']);
+        $this->assertSame(1, $counters['streams']['read']['total']);
+        $this->assertSame(0, $counters['streams']['write']['total']);
+        $this->assertSame(1, $counters['streams']['total']['total']);
+
+        $this->loop->removeReadStream($stream);
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(0, $counters['streams']['write']['current']);
+        $this->assertSame(0, $counters['streams']['total']['current']);
+        $this->assertSame(1, $counters['streams']['read']['total']);
+        $this->assertSame(0, $counters['streams']['write']['total']);
+        $this->assertSame(1, $counters['streams']['total']['total']);
+    }
+
+    public function testAddWriteStream()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(0, $counters['streams']['write']['current']);
+        $this->assertSame(0, $counters['streams']['total']['current']);
+        $this->assertSame(0, $counters['streams']['read']['total']);
+        $this->assertSame(0, $counters['streams']['write']['total']);
+        $this->assertSame(0, $counters['streams']['total']['total']);
+
+        $stream = $this->createStream(self::STREAM_WRITE);
+
+        $this->loop->addWriteStream($stream, function () {});
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(1, $counters['streams']['write']['current']);
+        $this->assertSame(1, $counters['streams']['total']['current']);
+        $this->assertSame(0, $counters['streams']['read']['total']);
+        $this->assertSame(1, $counters['streams']['write']['total']);
+        $this->assertSame(1, $counters['streams']['total']['total']);
+
+        $this->loop->removeWriteStream($stream);
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['streams']['read']['current']);
+        $this->assertSame(0, $counters['streams']['write']['current']);
+        $this->assertSame(0, $counters['streams']['total']['current']);
+        $this->assertSame(0, $counters['streams']['read']['total']);
+        $this->assertSame(1, $counters['streams']['write']['total']);
+        $this->assertSame(1, $counters['streams']['total']['total']);
     }
 }
