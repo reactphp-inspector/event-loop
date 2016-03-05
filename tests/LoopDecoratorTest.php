@@ -15,7 +15,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         $called = [
             'listener' => false,
             'addReadStream' => false,
-            'addReadStreamTick' => false,
+            'readStreamTick' => false,
         ];
 
         $stream = 'abc';
@@ -29,10 +29,10 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             $this->assertSame($listener, $passedListener);
             $called['addReadStream'] = true;
         });
-        $decoratedLoop->on('addReadStreamTick', function ($passedStream, $passedListener) use (&$called, $stream, $listener) {
+        $decoratedLoop->on('readStreamTick', function ($passedStream, $passedListener) use (&$called, $stream, $listener) {
             $this->assertSame($stream, $passedStream);
             $this->assertSame($listener, $passedListener);
-            $called['addReadStreamTick'] = true;
+            $called['readStreamTick'] = true;
         });
 
         Phake::when($loop)->addReadStream($stream, $listener)->thenReturnCallback(function ($stream, $listener) use ($loop) {
@@ -56,7 +56,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         $called = [
             'listener' => false,
             'addWriteStream' => false,
-            'addWriteStreamTick' => false,
+            'writeStreamTick' => false,
         ];
 
         $stream = 'abc';
@@ -70,10 +70,10 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             $this->assertSame($listener, $passedListener);
             $called['addWriteStream'] = true;
         });
-        $decoratedLoop->on('addWriteStreamTick', function ($passedStream, $passedListener) use (&$called, $stream, $listener) {
+        $decoratedLoop->on('writeStreamTick', function ($passedStream, $passedListener) use (&$called, $stream, $listener) {
             $this->assertSame($stream, $passedStream);
             $this->assertSame($listener, $passedListener);
-            $called['addWriteStreamTick'] = true;
+            $called['writeStreamTick'] = true;
         });
 
         Phake::when($loop)->addWriteStream($stream, $listener)->thenReturnCallback(function ($stream, $listener) use ($loop) {
@@ -146,7 +146,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         $called = [
             'listener' => false,
             'addTimer' => false,
-            'addTimerTick' => false,
+            'timerTick' => false,
         ];
 
         $interval = 123;
@@ -160,11 +160,11 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
             $called['addTimer'] = true;
         });
-        $decoratedLoop->on('addTimerTick', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener) {
+        $decoratedLoop->on('timerTick', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
             $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
-            $called['addTimerTick'] = true;
+            $called['timerTick'] = true;
         });
 
         Phake::when($loop)->addTimer($interval, $listener)->thenReturnCallback(function ($stream, $listener) use ($timer) {
@@ -190,7 +190,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         $called = [
             'listener' => false,
             'addPeriodicTimer' => false,
-            'addPeriodicTimerTick' => false,
+            'periodicTimerTick' => false,
         ];
 
         $interval = 123;
@@ -204,11 +204,11 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             $this->assertSame($timer, $passedTimer);
             $called['addPeriodicTimer'] = true;
         });
-        $decoratedLoop->on('addPeriodicTimerTick', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener, $timer) {
+        $decoratedLoop->on('periodicTimerTick', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener, $timer) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
             $this->assertSame($timer, $passedTimer);
-            $called['addPeriodicTimerTick'] = true;
+            $called['periodicTimerTick'] = true;
         });
 
         Phake::when($loop)->addPeriodicTimer($interval, $listener)->thenReturnCallback(function ($stream, $listener) use ($timer) {
