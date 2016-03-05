@@ -83,6 +83,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
      */
     public function removeStream($stream)
     {
+        $this->emit('removeStream', [$stream]);
         $this->loop->removeStream($stream);
     }
 
