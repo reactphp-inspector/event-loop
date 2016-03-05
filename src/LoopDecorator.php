@@ -34,7 +34,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     {
         $this->emit('addReadStream', [$stream, $listener]);
         $this->loop->addReadStream($stream, function ($stream, $loop) use ($listener) {
-            $this->emit('addReadStreamTick', [$stream, $listener]);
+            $this->emit('readStreamTick', [$stream, $listener]);
             $listener($stream, $loop);
         });
     }
@@ -49,7 +49,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     {
         $this->emit('addWriteStream', [$stream, $listener]);
         $this->loop->addWriteStream($stream, function ($stream, $loop) use ($listener) {
-            $this->emit('addWriteStreamTick', [$stream, $listener]);
+            $this->emit('writeStreamTick', [$stream, $listener]);
             $listener($stream, $loop);
         });
     }
@@ -100,7 +100,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     public function addTimer($interval, callable $callback)
     {
         $loopTimer = $this->loop->addTimer($interval, function (TimerInterface $loopTimer) use ($callback, $interval) {
-            $this->emit('addTimerTick', [$interval, $callback, $loopTimer]);
+            $this->emit('timerTick', [$interval, $callback, $loopTimer]);
             $callback($loopTimer);
         });
         $this->emit('addTimer', [$interval, $callback, $loopTimer]);
@@ -123,7 +123,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
         $loopTimer = $this->loop->addPeriodicTimer(
             $interval,
             function (TimerInterface $loopTimer) use ($callback, $interval) {
-                $this->emit('addPeriodicTimerTick', [$interval, $callback, $loopTimer]);
+                $this->emit('periodicTimerTick', [$interval, $callback, $loopTimer]);
                 $callback($loopTimer);
             }
         );

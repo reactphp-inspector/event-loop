@@ -45,7 +45,7 @@ class InfoProvider
             $this->counters['timers']['once']['current']++;
             $this->counters['timers']['once']['total']++;
         });
-        $loop->on('addTimerTick', function () {
+        $loop->on('timerTick', function () {
             $this->counters['timers']['once']['current']--;
             $this->counters['timers']['once']['ticks']++;
         });
@@ -53,7 +53,7 @@ class InfoProvider
             $this->counters['timers']['periodic']['current']++;
             $this->counters['timers']['periodic']['total']++;
         });
-        $loop->on('addPeriodicTimerTick', function () {
+        $loop->on('periodicTimerTick', function () {
             $this->counters['timers']['periodic']['ticks']++;
         });
         $loop->on('cancelTimer', function (TimerInterface $timer) {
@@ -68,7 +68,7 @@ class InfoProvider
             $this->counters['streams']['read']['total']++;
             $this->counters['streams']['total']['total']++;
         });
-        $loop->on('addReadStreamTick', function () {
+        $loop->on('readStreamTick', function () {
             $this->counters['streams']['read']['ticks']++;
             $this->counters['streams']['total']['ticks']++;
         });
@@ -83,7 +83,7 @@ class InfoProvider
             $this->counters['streams']['write']['total']++;
             $this->counters['streams']['total']['total']++;
         });
-        $loop->on('addWriteStreamTick', function () {
+        $loop->on('writeStreamTick', function () {
             $this->counters['streams']['write']['ticks']++;
             $this->counters['streams']['total']['ticks']++;
         });
