@@ -136,6 +136,19 @@ class InfoProvider
             $this->counters['streams']['write']['current'] = count($this->streamsWrite);
             $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
         });
+
+        $loop->on('removeStream', function ($stream) {
+            $key = (int) $stream;
+
+            if (isset($this->streamsWrite[$key])) {
+                unset($this->streamsWrite[$key]);
+            }
+            if (isset($this->streamsDuplex[$key])) {
+                unset($this->streamsDuplex[$key]);
+            }
+            $this->counters['streams']['write']['current'] = count($this->streamsWrite);
+            $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
+        });
     }
 
     public function reset()
