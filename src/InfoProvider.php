@@ -103,6 +103,7 @@ class InfoProvider
             if (isset($this->streamsDuplex[$key]) && !isset($this->streamsWrite[$key])) {
                 unset($this->streamsDuplex[$key]);
             }
+
             $this->counters['streams']['read']['current'] = count($this->streamsRead);
             $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
         });
@@ -116,6 +117,7 @@ class InfoProvider
             $this->counters['streams']['write']['current'] = count($this->streamsWrite);
             $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
             $this->counters['streams']['write']['total']++;
+
             if (!isset($this->streamsRead[$key])) {
                 $this->counters['streams']['total']['total']++;
             }
@@ -133,6 +135,7 @@ class InfoProvider
             if (isset($this->streamsDuplex[$key]) && !isset($this->streamsRead[$key])) {
                 unset($this->streamsDuplex[$key]);
             }
+
             $this->counters['streams']['write']['current'] = count($this->streamsWrite);
             $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
         });
@@ -146,6 +149,8 @@ class InfoProvider
             if (isset($this->streamsDuplex[$key])) {
                 unset($this->streamsDuplex[$key]);
             }
+
+            $this->counters['streams']['read']['current'] = count($this->streamsRead);
             $this->counters['streams']['write']['current'] = count($this->streamsWrite);
             $this->counters['streams']['total']['current'] = count($this->streamsDuplex);
         });
