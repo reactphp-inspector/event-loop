@@ -143,6 +143,9 @@ class InfoProvider
         $loop->on('removeStream', function ($stream) {
             $key = (int) $stream;
 
+            if (isset($this->streamsRead[$key])) {
+                unset($this->streamsRead[$key]);
+            }
             if (isset($this->streamsWrite[$key])) {
                 unset($this->streamsWrite[$key]);
             }
