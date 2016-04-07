@@ -39,6 +39,13 @@ class InfoProvider
         $this->loop = $loop;
         $this->reset();
 
+        $this->setupTicks();
+        $this->setupTimers();
+        $this->setupStreams();
+    }
+
+    protected function setupTicks(LoopDecorator $loop)
+    {
         $loop->on('futureTick', function () {
             $this->counters['ticks']['future']['current']++;
             $this->counters['ticks']['future']['total']++;
@@ -55,7 +62,10 @@ class InfoProvider
             $this->counters['ticks']['next']['current']--;
             $this->counters['ticks']['next']['ticks']++;
         });
+    }
 
+    protected function setupTimers(LoopDecorator $loop)
+    {
         $loop->on('addTimer', function () {
             $this->counters['timers']['once']['current']++;
             $this->counters['timers']['once']['total']++;
@@ -76,7 +86,10 @@ class InfoProvider
                 $this->counters['timers']['periodic']['current']--;
             }
         });
+    }
 
+    protected function setupStreams(LoopDecorator $loop)
+    {
         $loop->on('addReadStream', function ($stream) {
             $key = (int) $stream;
 
