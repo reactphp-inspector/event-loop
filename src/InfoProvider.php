@@ -39,9 +39,9 @@ class InfoProvider
         $this->loop = $loop;
         $this->reset();
 
-        $this->setupTicks();
-        $this->setupTimers();
-        $this->setupStreams();
+        $this->setupTicks($loop);
+        $this->setupTimers($loop);
+        $this->setupStreams($loop);
     }
 
     protected function setupTicks(LoopDecorator $loop)
