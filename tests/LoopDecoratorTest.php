@@ -20,9 +20,9 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         ];
 
         $stream = 'abc';
-        $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $loop) {
+        $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $decoratedLoop) {
             $this->assertSame($stream, $passedStream);
-            $this->assertSame($loop, $passedLoop);
+            $this->assertSame($decoratedLoop, $passedLoop);
             $called['listener'] = true;
         };
         $decoratedLoop->on('addReadStream', function ($passedStream, $passedListener) use (&$called, $stream, $listener) {
@@ -61,9 +61,9 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         ];
 
         $stream = 'abc';
-        $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $loop) {
+        $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $decoratedLoop) {
             $this->assertSame($stream, $passedStream);
-            $this->assertSame($loop, $passedLoop);
+            $this->assertSame($decoratedLoop, $passedLoop);
             $called['listener'] = true;
         };
         $decoratedLoop->on('addWriteStream', function ($passedStream, $passedListener) use (&$called, $stream, $listener) {
