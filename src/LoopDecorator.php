@@ -177,9 +177,9 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     public function nextTick(callable $listener)
     {
         $this->emit('nextTick', [$listener]);
-        return $this->loop->nextTick(function () use ($listener) {
+        return $this->loop->nextTick(function (LoopInterface $loop) use ($listener) {
             $this->emit('nextTickTick', [$listener]);
-            $listener();
+            $listener($loop);
         });
     }
 
@@ -193,9 +193,9 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     public function futureTick(callable $listener)
     {
         $this->emit('futureTick', [$listener]);
-        return $this->loop->futureTick(function () use ($listener) {
+        return $this->loop->futureTick(function (LoopInterface $loop) use ($listener) {
             $this->emit('futureTickTick', [$listener]);
-            $listener();
+            $listener($loop);
         });
     }
 
