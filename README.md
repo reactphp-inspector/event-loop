@@ -6,7 +6,7 @@
 [![License](https://poser.pugx.org/WyriHaximus/react-event-loop-inspector/license.png)](https://packagist.org/packages/wyrihaximus/react-event-loop-inspector)
 [![PHP 7 ready](http://php7ready.timesplinter.ch/WyriHaximus/reactphp-event-loop-inspector/badge.svg)](https://travis-ci.org/WyriHaximus/reactphp-event-loop-inspector)
 
-Wrap a [ReactPHP child process](https://github.com/reactphp/child-process) in a promise, once the process ends the promise resolves with the exit code and `STDERR` and `STDOUT` buffers.
+Inspect what is going on inside the [ReactPHP Event Loop](https://github.com/reactphp/event-loop).
 
 ### Installation ###
 
