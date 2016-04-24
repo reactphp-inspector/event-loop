@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4e3599c522c4078d9b5cb73ca05ca741",
-    "content-hash": "1bcf6d14b34a2536238fa3f557a96192",
+    "hash": "2ba44c84dfce6ee0f39709c3225d64a6",
+    "content-hash": "b6eecdcb5456baf6e671feba17812d34",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -154,16 +154,16 @@
         },
         {
             "name": "phake/phake",
-            "version": "v2.2.0",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mlively/Phake.git",
-                "reference": "9c3c287ef3f23d5ca438917ab1a4f8c47b654b4b"
+                "reference": "2202d361d34f2712dcc257afdedc6c30060dc9bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mlively/Phake/zipball/9c3c287ef3f23d5ca438917ab1a4f8c47b654b4b",
-                "reference": "9c3c287ef3f23d5ca438917ab1a4f8c47b654b4b",
+                "url": "https://api.github.com/repos/mlively/Phake/zipball/2202d361d34f2712dcc257afdedc6c30060dc9bd",
+                "reference": "2202d361d34f2712dcc257afdedc6c30060dc9bd",
                 "shasum": ""
             },
             "require": {
@@ -208,7 +208,7 @@
                 "mock",
                 "testing"
             ],
-            "time": "2015-11-30 17:02:04"
+            "time": "2016-03-04 18:49:33"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
