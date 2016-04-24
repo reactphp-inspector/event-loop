@@ -33,7 +33,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     public function addReadStream($stream, callable $listener)
     {
         $this->emit('addReadStream', [$stream, $listener]);
-        $this->loop->addReadStream($stream, function ($stream,) use ($listener) {
+        $this->loop->addReadStream($stream, function ($stream) use ($listener) {
             $this->emit('readStreamTick', [$stream, $listener]);
             $listener($stream, $this);
         });
