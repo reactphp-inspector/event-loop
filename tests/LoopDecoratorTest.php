@@ -274,8 +274,8 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             $called['nextTickTick'] = true;
         });
 
-        Phake::when($loop)->nextTick($listener)->thenReturnCallback(function ($listener) {
-            $listener();
+        Phake::when($loop)->nextTick($listener)->thenReturnCallback(function ($listener) use ($loop) {
+            $listener($loop);
         });
 
         $decoratedLoop->nextTick($listener);
@@ -310,8 +310,8 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
             $called['futureTickTick'] = true;
         });
 
-        Phake::when($loop)->futureTick($listener)->thenReturnCallback(function ($listener) {
-            $listener();
+        Phake::when($loop)->futureTick($listener)->thenReturnCallback(function ($listener) use ($loop) {
+            $listener($loop);
         });
 
         $decoratedLoop->futureTick($listener);
