@@ -22,7 +22,8 @@
   "autoload": {
     "psr-4": {
       "WyriHaximus\\React\\Inspector\\": "src/"
-    }
+    },
+    "files": ["src/bootstrap.php"]
   },
   "autoload-dev": {
     "psr-4": {

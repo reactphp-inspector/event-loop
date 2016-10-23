@@ -37,6 +37,11 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
             $this->emit('readStreamTick', [$stream, $listener]);
             $listener($stream, $this);
         });
+        stream_filter_append($stream, StreamThroughputFilter::class, STREAM_FILTER_READ, [
+            'loopDecorator' => $this,
+            'event' => 'readStreamThroughput',
+            'stream' => $stream,
+        ]);
     }
 
     /**
@@ -52,6 +57,11 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
             $this->emit('writeStreamTick', [$stream, $listener]);
             $listener($stream, $this);
         });
+        stream_filter_append($stream, StreamThroughputFilter::class, STREAM_FILTER_READ, [
+            'loopDecorator' => $this,
+            'event' => 'readWriteThroughput',
+            'stream' => $stream,
+        ]);
     }
 
     /**
