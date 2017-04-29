@@ -6,7 +6,11 @@
 [![License](https://poser.pugx.org/WyriHaximus/react-event-loop-inspector/license.png)](https://packagist.org/packages/wyrihaximus/react-event-loop-inspector)
 [![PHP 7 ready](http://php7ready.timesplinter.ch/WyriHaximus/reactphp-event-loop-inspector/badge.svg)](https://travis-ci.org/WyriHaximus/reactphp-event-loop-inspector)
 
-Inspect what is going on inside the [ReactPHP Event Loop](https://github.com/reactphp/event-loop). DO NOT USE THIS IN PRODUCTION UNLESS YOU HAVE A GOOD REASON TO! It will hook into all events and cause overhead on all event calls!
+Inspect what is going on inside the [ReactPHP Event Loop](https://github.com/reactphp/event-loop).
+
+# DO NOT USE THIS IN PRODUCTION UNLESS YOU HAVE A GOOD REASON TO!
+
+It will hook into all events and cause overhead on all event calls!
 
 ### Installation ###
 
