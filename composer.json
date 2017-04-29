@@ -22,12 +22,20 @@
   "autoload": {
     "psr-4": {
       "WyriHaximus\\React\\Inspector\\": "src/"
-    },
-    "files": ["src/bootstrap.php"]
+    }
   },
   "autoload-dev": {
     "psr-4": {
       "WyriHaximus\\React\\Tests\\Inspector\\": "src/"
+    }
+  },
+  "suggest": {
+    "wyrihaximus/react-event-loop-inspector-f42": "Measure what is going through fread/fwrite methods"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "5.4"
     }
   }
 }
