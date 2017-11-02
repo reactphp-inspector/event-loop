@@ -13,6 +13,13 @@ final class GlobalState
 
     public static function reset()
     {
+        foreach (self::$state as $key => $value) {
+            self::$state[$key] = 0;
+        }
+    }
+
+    public static function clear()
+    {
         self::$state = [];
     }
 

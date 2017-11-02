@@ -17,6 +17,8 @@ final class GlobalStateTest extends TestCase
         GlobalState::incr('key', 3);
         self::assertSame(['key' => 5], GlobalState::get());
         GlobalState::reset();
+        self::assertSame(['key' => 0], GlobalState::get());
+        GlobalState::clear();
         self::assertSame([], GlobalState::get());
         GlobalState::incr('key', 3);
         self::assertSame(['key' => 3], GlobalState::get());
