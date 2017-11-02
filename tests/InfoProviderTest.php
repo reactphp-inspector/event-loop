@@ -122,6 +122,34 @@ class InfoProviderTest extends TestCase
         $this->assertSame(1, $counters['timers.once.ticks']);
     }
 
+    public function testTimerCanceledBeforeCalled()
+    {
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['timers.once.current']);
+        $this->assertSame(0, $counters['timers.once.total']);
+        $this->assertSame(0, $counters['timers.once.ticks']);
+
+        $timer = $this->loop->addTimer(1, function () {
+        });
+
+        $this->loop->futureTick(function () use ($timer) {
+            $this->loop->cancelTimer($timer);
+            $this->loop->cancelTimer($timer);
+        });
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(1, $counters['timers.once.current']);
+        $this->assertSame(1, $counters['timers.once.total']);
+        $this->assertSame(0, $counters['timers.once.ticks']);
+
+        $this->loop->run();
+
+        $counters = $this->infoProvider->getCounters();
+        $this->assertSame(0, $counters['timers.once.current']);
+        $this->assertSame(1, $counters['timers.once.total']);
+        $this->assertSame(0, $counters['timers.once.ticks']);
+    }
+
     public function testPeriodicTimer()
     {
         $counters = $this->infoProvider->getCounters();

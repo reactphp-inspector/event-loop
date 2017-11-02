@@ -32,6 +32,11 @@ class InfoProvider
     protected $streamsDuplex = [];
 
     /**
+     * @var TimerInterface[]
+     */
+    private $timers = [];
+
+    /**
      * @param LoopDecorator $loop
      */
     public function __construct(LoopDecorator $loop)
@@ -125,15 +130,24 @@ class InfoProvider
 
     protected function setupTimers(LoopDecorator $loop)
     {
-        $loop->on('addTimer', function () {
+        $loop->on('addTimer', function ($_, $__, $timer) {
+            $this->timers[spl_object_hash($timer)] = true;
             GlobalState::incr('timers.once.current');
             GlobalState::incr('timers.once.total');
         });
-        $loop->on('timerTick', function () {
+        $loop->on('timerTick', function ($_, $__, $timer) {
             GlobalState::decr('timers.once.current');
             GlobalState::incr('timers.once.ticks');
+
+            $hash = spl_object_hash($timer);
+            if (!isset($this->timers[$hash])) {
+                return;
+            }
+
+            unset($this->timers[$hash]);
         });
-        $loop->on('addPeriodicTimer', function () {
+        $loop->on('addPeriodicTimer', function ($_, $__, $timer) {
+            $this->timers[spl_object_hash($timer)] = true;
             GlobalState::incr('timers.periodic.current');
             GlobalState::incr('timers.periodic.total');
         });
@@ -141,9 +155,19 @@ class InfoProvider
             GlobalState::incr('timers.periodic.ticks');
         });
         $loop->on('cancelTimer', function (TimerInterface $timer) {
+            $hash = spl_object_hash($timer);
+            if (!isset($this->timers[$hash])) {
+                return;
+            }
+
+            unset($this->timers[$hash]);
+
             if ($timer->isPeriodic()) {
                 GlobalState::decr('timers.periodic.current');
+                return;
             }
+
+            GlobalState::decr('timers.once.current');
         });
     }
 
