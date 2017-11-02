@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WyriHaximus\React\Inspector;
 
@@ -27,7 +27,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     /**
      * Register a listener to be notified when a stream is ready to read.
      *
-     * @param stream $stream The PHP stream resource to check.
+     * @param stream   $stream   The PHP stream resource to check.
      * @param callable $listener Invoked when the stream is ready.
      */
     public function addReadStream($stream, callable $listener)
@@ -42,7 +42,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     /**
      * Register a listener to be notified when a stream is ready to write.
      *
-     * @param stream $stream The PHP stream resource to check.
+     * @param stream   $stream   The PHP stream resource to check.
      * @param callable $listener Invoked when the stream is ready.
      */
     public function addWriteStream($stream, callable $listener)
@@ -93,7 +93,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
      * The execution order of timers scheduled to execute at the same time is
      * not guaranteed.
      *
-     * @param numeric $interval The number of seconds to wait before execution.
+     * @param numeric  $interval The number of seconds to wait before execution.
      * @param callable $callback The callback to invoke.
      *
      * @return TimerInterface
@@ -105,14 +105,12 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
             $this->emit('timerTick', [$interval, $callback, $loopTimer]);
             $callback($loopTimer);
         };
-        $loopTimer = new TimerDecorator(
-            $this,
-            $this->loop->addTimer(
-                $interval,
-                $wrapper
-            )
+        $loopTimer = $this->loop->addTimer(
+            $interval,
+            $wrapper
         );
         $this->emit('addTimer', [$interval, $callback, $loopTimer]);
+
         return $loopTimer;
     }
 
@@ -122,24 +120,22 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
      * The execution order of timers scheduled to execute at the same time is
      * not guaranteed.
      *
-     * @param numeric $interval The number of seconds to wait before execution.
+     * @param numeric  $interval The number of seconds to wait before execution.
      * @param callable $callback The callback to invoke.
      *
      * @return TimerInterface
      */
     public function addPeriodicTimer($interval, callable $callback)
     {
-        $loopTimer = new TimerDecorator(
-            $this,
-            $this->loop->addPeriodicTimer(
-                $interval,
-                function () use (&$loopTimer, $callback, $interval) {
-                    $this->emit('periodicTimerTick', [$interval, $callback, $loopTimer]);
-                    $callback($loopTimer);
-                }
-            )
+        $loopTimer = $this->loop->addPeriodicTimer(
+            $interval,
+            function () use (&$loopTimer, $callback, $interval) {
+                $this->emit('periodicTimerTick', [$interval, $callback, $loopTimer]);
+                $callback($loopTimer);
+            }
         );
         $this->emit('addPeriodicTimer', [$interval, $callback, $loopTimer]);
+
         return $loopTimer;
     }
 
@@ -151,6 +147,7 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     public function cancelTimer(TimerInterface $timer)
     {
         $this->emit('cancelTimer', [$timer]);
+
         return $this->loop->cancelTimer($timer);
     }
 
@@ -159,28 +156,11 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
      *
      * @param TimerInterface $timer The timer to check.
      *
-     * @return boolean True if the timer is still enqueued for execution.
+     * @return bool True if the timer is still enqueued for execution.
      */
     public function isTimerActive(TimerInterface $timer)
     {
         return $this->loop->isTimerActive($timer);
-    }
-
-    /**
-     * Schedule a callback to be invoked on the next tick of the event loop.
-     *
-     * Callbacks are guaranteed to be executed in the order they are enqueued,
-     * before any timer or stream events.
-     *
-     * @param callable $listener The callback to invoke.
-     */
-    public function nextTick(callable $listener)
-    {
-        $this->emit('nextTick', [$listener]);
-        return $this->loop->nextTick(function (LoopInterface $loop) use ($listener) {
-            $this->emit('nextTickTick', [$listener]);
-            $listener($this);
-        });
     }
 
     /**
@@ -193,7 +173,8 @@ class LoopDecorator implements LoopInterface, EventEmitterInterface
     public function futureTick(callable $listener)
     {
         $this->emit('futureTick', [$listener]);
-        return $this->loop->futureTick(function (LoopInterface $loop) use ($listener) {
+
+        return $this->loop->futureTick(function () use ($listener) {
             $this->emit('futureTickTick', [$listener]);
             $listener($this);
         });

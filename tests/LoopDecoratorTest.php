@@ -1,16 +1,19 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace WyriHaximus\React\Tests\Inspector;
 
 use Phake;
+use PHPUnit\Framework\TestCase;
 use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\Timer\TimerInterface;
 use WyriHaximus\React\Inspector\LoopDecorator;
 
-class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
+class LoopDecoratorTest extends TestCase
 {
     public function testAddReadStream()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -51,7 +54,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testAddWriteStream()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -92,7 +95,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testRemoveReadStream()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = false;
@@ -110,7 +113,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testRemoveWriteStream()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = false;
@@ -128,14 +131,13 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testRemoveStream()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
         $decoratedLoop = new LoopDecorator($loop);
 
         $stream = 'abc';
         $decoratedLoop->removeStream($stream);
 
         Phake::verify($loop)->removeStream($stream);
-
     }
 
     public function testAddTimer()
@@ -151,22 +153,19 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
         $interval = 0.123;
         $listener = function ($timer) use (&$called) {
-            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
-            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
+            $this->assertInstanceOf(TimerInterface::class, $timer);
             $called['listener'] = true;
         };
         $decoratedLoop->on('addTimer', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
-            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
+            $this->assertInstanceOf(TimerInterface::class, $timer);
             $called['addTimer'] = true;
         });
         $decoratedLoop->on('timerTick', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
-            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
+            $this->assertInstanceOf(TimerInterface::class, $timer);
             $called['timerTick'] = true;
         });
 
@@ -191,24 +190,21 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         ];
 
         $interval = 0.123;
-        $listener = function ($timer) use (&$called) {
-            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $timer);
-            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $timer);
+        $listener = function ($timer) use (&$called, $loop) {
+            $this->assertInstanceOf(TimerInterface::class, $timer);
             $called['listener'] = true;
-            $timer->cancel();
+            $loop->cancelTimer($timer);
         };
         $decoratedLoop->on('addPeriodicTimer', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $passedTimer);
-            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $passedTimer);
+            $this->assertInstanceOf(TimerInterface::class, $passedTimer);
             $called['addPeriodicTimer'] = true;
         });
         $decoratedLoop->on('periodicTimerTick', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener) {
             $this->assertSame($interval, $passedInterval);
             $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf('WyriHaximus\React\Inspector\TimerDecorator', $passedTimer);
-            $this->assertInstanceOf('React\EventLoop\Timer\TimerInterface', $passedTimer);
+            $this->assertInstanceOf(TimerInterface::class, $passedTimer);
             $called['periodicTimerTick'] = true;
         });
 
@@ -223,8 +219,8 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testCancelTimer()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
-        $timer = Phake::mock('React\EventLoop\Timer\TimerInterface');
+        $loop = Phake::mock(LoopInterface::class);
+        $timer = Phake::mock(TimerInterface::class);
 
         $decoratedLoop = new LoopDecorator($loop);
 
@@ -242,54 +238,18 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testIsTimerActive()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
         $decoratedLoop = new LoopDecorator($loop);
 
-        $timer = Phake::mock('React\EventLoop\Timer\TimerInterface');
+        $timer = Phake::mock(TimerInterface::class);
         $decoratedLoop->isTimerActive($timer);
 
         Phake::verify($loop)->isTimerActive($timer);
     }
 
-    public function testNextTick()
-    {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
-        $decoratedLoop = new LoopDecorator($loop);
-
-        $called = [
-            'listener' => false,
-            'nextTick' => false,
-            'nextTickTick' => false,
-        ];
-
-        $listener = function () use (&$called) {
-            $called['listener'] = true;
-        };
-        $decoratedLoop->on('nextTick', function ($passedListener) use (&$called, $listener) {
-            $this->assertSame($listener, $passedListener);
-            $called['nextTick'] = true;
-        });
-        $decoratedLoop->on('nextTickTick', function ($passedListener) use (&$called, $listener) {
-            $this->assertSame($listener, $passedListener);
-            $called['nextTickTick'] = true;
-        });
-
-        Phake::when($loop)->nextTick($listener)->thenReturnCallback(function ($listener) use ($loop) {
-            $listener($loop);
-        });
-
-        $decoratedLoop->nextTick($listener);
-
-        foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
-        }
-
-        Phake::verify($loop)->nextTick($listener);
-    }
-
     public function testFutureTick()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -323,36 +283,9 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
         Phake::verify($loop)->futureTick($listener);
     }
 
-    public function testTick()
-    {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
-
-        $decoratedLoop = new LoopDecorator($loop);
-
-        $called = [
-            'tickStart' => false,
-            'tickDone' => false,
-        ];
-
-        foreach ($called as $key => $call) {
-            $eventKey = $key;
-            $decoratedLoop->on($eventKey, function () use (&$called, $eventKey) {
-                $called[$eventKey]= true;
-            });
-        }
-
-        $decoratedLoop->tick();
-
-        foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
-        }
-
-        Phake::verify($loop)->tick();
-    }
-
     public function testRun()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
 
         $decoratedLoop = new LoopDecorator($loop);
 
@@ -379,7 +312,7 @@ class LoopDecoratorTest extends \PHPUnit_Framework_TestCase
 
     public function testStop()
     {
-        $loop = Phake::mock('React\EventLoop\LoopInterface');
+        $loop = Phake::mock(LoopInterface::class);
 
         $decoratedLoop = new LoopDecorator($loop);
 
