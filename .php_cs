@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-use ApiClients\Tools\TestUtilities\PhpCsFixerConfig;
 use PhpCsFixer\Config;
+use WyriHaximus\CsFixerConfig\PhpCsFixerConfig;
 
 return (function (): Config
 {
     $paths = [
-        __DIR__ . DIRECTORY_SEPARATOR . 'src',
+//        __DIR__ . DIRECTORY_SEPARATOR . 'src',
         __DIR__ . DIRECTORY_SEPARATOR . 'tests',
     ];
 
