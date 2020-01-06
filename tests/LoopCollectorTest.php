@@ -7,13 +7,13 @@ use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
 use React\EventLoop\TimerInterface;
 use React\Promise\PromiseInterface;
+use ReactInspector\EventLoop\LoopCollector;
+use ReactInspector\EventLoop\LoopDecorator;
 use ReactInspector\Measurement;
 use ReactInspector\Metric;
 use ReactInspector\Tag;
 use Rx\Observable;
 use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
-use ReactInspector\EventLoop\LoopCollector;
-use ReactInspector\EventLoop\LoopDecorator;
 
 /**
  * @internal
@@ -518,7 +518,7 @@ final class LoopCollectorTest extends AsyncTestCase
     private function getMeasurements(string $metricName, string $component): PromiseInterface
     {
         return $this->infoProvider->collect()->filter(function (Metric $metric) use ($metricName): bool {
-            return $metric->name() === $metricName;
+            return $metric->config()->name() === $metricName;
         })->flatMap(function (Metric $metric): Observable {
             return observableFromArray($metric->measurements());
         })->filter(function (Measurement $measurement) use ($component): bool {

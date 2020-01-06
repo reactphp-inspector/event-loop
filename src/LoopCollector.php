@@ -4,6 +4,7 @@ namespace ReactInspector\EventLoop;
 
 use React\EventLoop\TimerInterface;
 use ReactInspector\CollectorInterface;
+use ReactInspector\Config;
 use ReactInspector\Measurement;
 use ReactInspector\Metric;
 use ReactInspector\Tag;
@@ -222,7 +223,11 @@ final class LoopCollector implements CollectorInterface
     {
         return observableFromArray([
             new Metric(
-                'reactphp_ticks',
+                new Config(
+                    'reactphp_ticks',
+                    'gauge',
+                    ''
+                ),
                 [
                     new Tag('reactphp_component', 'event-loop'),
                 ],
@@ -270,7 +275,11 @@ final class LoopCollector implements CollectorInterface
                 ]
             ),
             new Metric(
-                'reactphp_signals',
+                new Config(
+                    'reactphp_signals',
+                    'gauge',
+                    ''
+                ),
                 [
                     new Tag('reactphp_component', 'event-loop'),
                 ],
@@ -288,7 +297,11 @@ final class LoopCollector implements CollectorInterface
                 ]
             ),
             new Metric(
-                'reactphp_streams',
+                new Config(
+                    'reactphp_streams',
+                    'gauge',
+                    ''
+                ),
                 [
                     new Tag('reactphp_component', 'event-loop'),
                 ],
@@ -332,7 +345,11 @@ final class LoopCollector implements CollectorInterface
                 ]
             ),
             new Metric(
-                'reactphp_timers',
+                new Config(
+                    'reactphp_timers',
+                    'gauge',
+                    ''
+                ),
                 [
                     new Tag('reactphp_component', 'event-loop'),
                 ],

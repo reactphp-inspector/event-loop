@@ -7,8 +7,8 @@ use Prophecy\Argument;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
-use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
 use ReactInspector\EventLoop\LoopDecorator;
+use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
 
 /**
  * @internal
