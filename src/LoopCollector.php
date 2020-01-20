@@ -6,8 +6,10 @@ use React\EventLoop\TimerInterface;
 use ReactInspector\CollectorInterface;
 use ReactInspector\Config;
 use ReactInspector\Measurement;
+use ReactInspector\Measurements;
 use ReactInspector\Metric;
 use ReactInspector\Tag;
+use ReactInspector\Tags;
 use Rx\Observable;
 use function ApiClients\Tools\Rx\observableFromArray;
 
@@ -228,51 +230,67 @@ final class LoopCollector implements CollectorInterface
                     'gauge',
                     ''
                 ),
-                [
+                new Tags(
                     new Tag('reactphp_component', 'event-loop'),
-                ],
-                [
-                    new Measurement($this->metrics['signals.ticks'], new Tag('event_loop_component', 'signals')),
+                ),
+                new Measurements(
+                    new Measurement($this->metrics['signals.ticks'], new Tags(new Tag('event_loop_component', 'signals'))),
                     new Measurement(
                         $this->metrics['streams.read.ticks'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'read'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'read'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['streams.duplex.ticks'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'duplex'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'duplex'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['streams.write.ticks'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'write'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'write'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['timers.periodic.ticks'],
-                        new Tag('event_loop_component', 'timers'),
-                        new Tag('timer_kind', 'periodic'),
+                        new Tags(
+                            new Tag('event_loop_component', 'timers'),
+                            new Tag('timer_kind', 'periodic'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['timers.once.ticks'],
-                        new Tag('event_loop_component', 'timers'),
-                        new Tag('timer_kind', 'once'),
+                        new Tags(
+                            new Tag('event_loop_component', 'timers'),
+                            new Tag('timer_kind', 'once'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['ticks.future.ticks'],
-                        new Tag('event_loop_component', 'ticks'),
+                        new Tags(
+                            new Tag('event_loop_component', 'ticks'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['ticks.future.current'],
-                        new Tag('event_loop_component', 'ticks'),
-                        new Tag('future_tick_state', 'active'),
+                        new Tags(
+                            new Tag('event_loop_component', 'ticks'),
+                            new Tag('future_tick_state', 'active'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['ticks.future.total'] - $this->metrics['ticks.future.current'],
-                        new Tag('event_loop_component', 'ticks'),
-                        new Tag('future_tick_state', 'done'),
+                        new Tags(
+                            new Tag('event_loop_component', 'ticks'),
+                            new Tag('future_tick_state', 'done'),
+                        )
                     ),
-                ]
+                )
             ),
             new Metric(
                 new Config(
@@ -280,21 +298,25 @@ final class LoopCollector implements CollectorInterface
                     'gauge',
                     ''
                 ),
-                [
+                new Tags(
                     new Tag('reactphp_component', 'event-loop'),
-                ],
-                [
+                ),
+                new Measurements(
                     new Measurement(
                         $this->metrics['signals.current'],
-                        new Tag('event_loop_component', 'signals'),
-                        new Tag('signal_state', 'active'),
+                        new Tags(
+                            new Tag('event_loop_component', 'signals'),
+                            new Tag('signal_state', 'active'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['signals.total'] - $this->metrics['signals.current'],
-                        new Tag('event_loop_component', 'signals'),
-                        new Tag('signal_state', 'done'),
+                        new Tags(
+                            new Tag('event_loop_component', 'signals'),
+                            new Tag('signal_state', 'done'),
+                        )
                     ),
-                ]
+                )
             ),
             new Metric(
                 new Config(
@@ -302,47 +324,59 @@ final class LoopCollector implements CollectorInterface
                     'gauge',
                     ''
                 ),
-                [
+                new Tags(
                     new Tag('reactphp_component', 'event-loop'),
-                ],
-                [
+                ),
+                new Measurements(
                     new Measurement(
                         $this->metrics['streams.duplex.current'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'duplex'),
-                        new Tag('stream_state', 'active'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'duplex'),
+                            new Tag('stream_state', 'active'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['streams.duplex.total'] - $this->metrics['streams.duplex.current'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'duplex'),
-                        new Tag('stream_state', 'done'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'duplex'),
+                            new Tag('stream_state', 'done'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['streams.read.current'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'read'),
-                        new Tag('stream_state', 'active'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'read'),
+                            new Tag('stream_state', 'active'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['streams.read.total'] - $this->metrics['streams.read.current'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'read'),
-                        new Tag('stream_state', 'done'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'read'),
+                            new Tag('stream_state', 'done'),
+                        ),
                     ),
                     new Measurement(
                         $this->metrics['streams.write.current'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'write'),
-                        new Tag('stream_state', 'active'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'write'),
+                            new Tag('stream_state', 'active'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['streams.write.total'] - $this->metrics['streams.write.current'],
-                        new Tag('event_loop_component', 'streams'),
-                        new Tag('stream_kind', 'write'),
-                        new Tag('stream_state', 'done'),
+                        new Tags(
+                            new Tag('event_loop_component', 'streams'),
+                            new Tag('stream_kind', 'write'),
+                            new Tag('stream_state', 'done'),
+                        )
                     ),
-                ]
+                )
             ),
             new Metric(
                 new Config(
@@ -350,35 +384,43 @@ final class LoopCollector implements CollectorInterface
                     'gauge',
                     ''
                 ),
-                [
+                new Tags(
                     new Tag('reactphp_component', 'event-loop'),
-                ],
-                [
+                ),
+                new Measurements(
                     new Measurement(
                         $this->metrics['timers.periodic.current'],
-                        new Tag('event_loop_component', 'timers'),
-                        new Tag('timer_kind', 'periodic'),
-                        new Tag('timer_state', 'active'),
+                        new Tags(
+                            new Tag('event_loop_component', 'timers'),
+                            new Tag('timer_kind', 'periodic'),
+                            new Tag('timer_state', 'active'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['timers.periodic.total'] - $this->metrics['timers.periodic.current'],
-                        new Tag('event_loop_component', 'timers'),
-                        new Tag('timer_kind', 'periodic'),
-                        new Tag('timer_state', 'done'),
+                        new Tags(
+                            new Tag('event_loop_component', 'timers'),
+                            new Tag('timer_kind', 'periodic'),
+                            new Tag('timer_state', 'done'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['timers.once.current'],
-                        new Tag('event_loop_component', 'timers'),
-                        new Tag('timer_kind', 'once'),
-                        new Tag('timer_state', 'active'),
+                        new Tags(
+                            new Tag('event_loop_component', 'timers'),
+                            new Tag('timer_kind', 'once'),
+                            new Tag('timer_state', 'active'),
+                        )
                     ),
                     new Measurement(
                         $this->metrics['timers.once.total'] - $this->metrics['timers.once.current'],
-                        new Tag('event_loop_component', 'timers'),
-                        new Tag('timer_kind', 'once'),
-                        new Tag('timer_state', 'done'),
+                        new Tags(
+                            new Tag('event_loop_component', 'timers'),
+                            new Tag('timer_kind', 'once'),
+                            new Tag('timer_state', 'done'),
+                        )
                     ),
-                ]
+                )
             ),
         ]);
     }

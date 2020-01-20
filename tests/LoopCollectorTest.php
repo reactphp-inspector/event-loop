@@ -520,9 +520,9 @@ final class LoopCollectorTest extends AsyncTestCase
         return $this->infoProvider->collect()->filter(function (Metric $metric) use ($metricName): bool {
             return $metric->config()->name() === $metricName;
         })->flatMap(function (Metric $metric): Observable {
-            return observableFromArray($metric->measurements());
+            return observableFromArray($metric->measurements()->get());
         })->filter(function (Measurement $measurement) use ($component): bool {
-            return \count(\array_filter($measurement->tags(), function (Tag $tag) use ($component): bool {
+            return \count(\array_filter($measurement->tags()->get(), function (Tag $tag) use ($component): bool {
                 return $tag->key() === 'event_loop_component' && $tag->value() === $component;
             })) > 0;
         })->toArray()->toPromise();
@@ -530,7 +530,7 @@ final class LoopCollectorTest extends AsyncTestCase
 
     private function hasTagAndValue(Measurement $measurement, array $keyValuePairs): bool
     {
-        $tags = $measurement->tags();
+        $tags = $measurement->tags()->get();
 
         foreach ($keyValuePairs as $key => $value) {
             foreach ($tags as $tag) {

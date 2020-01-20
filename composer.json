@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "php": "^7.3",
+    "php": "^7.4",
     "evenement/evenement": "^3.0 || ^2.0",
     "react-inspector/metric": "dev-master",
     "react-inspector/metrics": "dev-master",
@@ -35,7 +35,7 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "7.3"
+      "php": "7.4"
     }
   },
   "scripts": {
