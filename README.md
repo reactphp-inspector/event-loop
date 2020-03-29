@@ -1,23 +1,18 @@
-# ReactPHP Event Loop Inspector
-[![Linux Build Status](https://travis-ci.org/WyriHaximus/reactphp-event-loop-inspector.png)](https://travis-ci.org/WyriHaximus/reactphp-event-loop-inspector)
-[![Latest Stable Version](https://poser.pugx.org/WyriHaximus/react-event-loop-inspector/v/stable.png)](https://packagist.org/packages/WyriHaximus/react-event-loop-inspector)
-[![Total Downloads](https://poser.pugx.org/WyriHaximus/react-event-loop-inspector/downloads.png)](https://packagist.org/packages/WyriHaximus/react-event-loop-inspector)
-[![Code Coverage](https://scrutinizer-ci.com/g/WyriHaximus/reactphp-event-loop-inspector/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/WyriHaximus/reactphp-event-loop-inspector/?branch=master)
-[![License](https://poser.pugx.org/WyriHaximus/react-event-loop-inspector/license.png)](https://packagist.org/packages/wyrihaximus/react-event-loop-inspector)
-[![PHP 7 ready](http://php7ready.timesplinter.ch/WyriHaximus/reactphp-event-loop-inspector/badge.svg)](https://travis-ci.org/WyriHaximus/reactphp-event-loop-inspector)
+# Event loop metrics collector
 
-Inspect what is going on inside the [ReactPHP Event Loop](https://github.com/reactphp/event-loop).
-
-# DO NOT USE THIS IN PRODUCTION UNLESS YOU HAVE A GOOD REASON TO!
-
-It will hook into all events and cause overhead on all event calls!
+![Continuous Integration](https://github.com/reactphp-inspector/event-loop/workflows/Continuous%20Integration/badge.svg)
+[![Latest Stable Version](https://poser.pugx.org/react-inspector/event-loop/v/stable.png)](https://packagist.org/packages/react-inspector/event-loop)
+[![Total Downloads](https://poser.pugx.org/react-inspector/event-loop/downloads.png)](https://packagist.org/packages/react-inspector/event-loop/stats)
+[![Code Coverage](https://scrutinizer-ci.com/g/reactphp-inspector/event-loop/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/reactphp-inspector/event-loop/?branch=master)
+[![Type Coverage](https://shepherd.dev/github/reactphp-inspector/event-loop/coverage.svg)](https://shepherd.dev/github/reactphp-inspector/event-loop)
+[![License](https://poser.pugx.org/react-inspector/event-loop/license.png)](https://packagist.org/packages/react-inspector/event-loop)
 
 ### Installation ###
 
 To install via [Composer](http://getcomposer.org/), use the command below, it will automatically detect the latest version and bind it with `^`.
 
 ```
-composer require wyrihaximus/react-event-loop-inspector 
+composer require react-inspector/event-loop 
 ```
 
 ## Contributing ##
@@ -26,7 +21,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## License ##
 
-Copyright 2017 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
+Copyright 2020 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
