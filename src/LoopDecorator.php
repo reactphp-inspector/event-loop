@@ -6,96 +6,74 @@ use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
+use function spl_object_hash;
 
 final class LoopDecorator implements LoopInterface, EventEmitterInterface
 {
     use EventEmitterTrait;
 
-    /**
-     * @var LoopInterface
-     */
-    private $loop;
+    private LoopInterface $loop;
 
-    /**
-     * @var callable[]
-     */
-    private $signalListeners = [];
+    /** @var array<int, array<string, callable>> */
+    private array $signalListeners = [];
 
-    /**
-     * @param LoopInterface $loop
-     */
     public function __construct(LoopInterface $loop)
     {
         $this->loop = $loop;
     }
 
     /**
-     * Register a listener to be notified when a stream is ready to read.
-     *
-     * @param stream   $stream   The PHP stream resource to check.
-     * @param callable $listener Invoked when the stream is ready.
+     * {@inheritDoc}
      */
-    public function addReadStream($stream, $listener)
+    public function addReadStream($stream, $listener): void
     {
         $this->emit('addReadStream', [$stream, $listener]);
-        $this->loop->addReadStream($stream, function ($stream) use ($listener) {
+        /** @psalm-suppress MissingClosureParamType */
+        $this->loop->addReadStream($stream, function ($stream) use ($listener): void {
             $this->emit('readStreamTick', [$stream, $listener]);
             $listener($stream, $this);
         });
     }
 
     /**
-     * Register a listener to be notified when a stream is ready to write.
-     *
-     * @param stream   $stream   The PHP stream resource to check.
-     * @param callable $listener Invoked when the stream is ready.
+     * {@inheritDoc}
      */
-    public function addWriteStream($stream, $listener)
+    public function addWriteStream($stream, $listener): void
     {
         $this->emit('addWriteStream', [$stream, $listener]);
-        $this->loop->addWriteStream($stream, function ($stream) use ($listener) {
+        /** @psalm-suppress MissingClosureParamType */
+        $this->loop->addWriteStream($stream, function ($stream) use ($listener): void {
             $this->emit('writeStreamTick', [$stream, $listener]);
             $listener($stream, $this);
         });
     }
 
     /**
-     * Remove the read event listener for the given stream.
-     *
-     * @param stream $stream The PHP stream resource.
+     * {@inheritDoc}
      */
-    public function removeReadStream($stream)
+    public function removeReadStream($stream): void
     {
         $this->emit('removeReadStream', [$stream]);
         $this->loop->removeReadStream($stream);
     }
 
     /**
-     * Remove the write event listener for the given stream.
-     *
-     * @param stream $stream The PHP stream resource.
+     * {@inheritDoc}
      */
-    public function removeWriteStream($stream)
+    public function removeWriteStream($stream): void
     {
         $this->emit('removeWriteStream', [$stream]);
         $this->loop->removeWriteStream($stream);
     }
 
     /**
-     * Enqueue a callback to be invoked once after the given interval.
-     *
-     * The execution order of timers scheduled to execute at the same time is
-     * not guaranteed.
-     *
-     * @param numeric  $interval The number of seconds to wait before execution.
-     * @param callable $callback The callback to invoke.
-     *
-     * @return TimerInterface
+     * {@inheritDoc}
      */
+    // phpcs:disable
     public function addTimer($interval, $callback)
     {
         $loopTimer = null;
-        $wrapper = function () use (&$loopTimer, $callback, $interval) {
+        $wrapper   = function () use (&$loopTimer, $callback, $interval): void {
             $this->emit('timerTick', [$interval, $callback, $loopTimer]);
             $callback($loopTimer);
         };
@@ -109,21 +87,14 @@ final class LoopDecorator implements LoopInterface, EventEmitterInterface
     }
 
     /**
-     * Enqueue a callback to be invoked repeatedly after the given interval.
-     *
-     * The execution order of timers scheduled to execute at the same time is
-     * not guaranteed.
-     *
-     * @param numeric  $interval The number of seconds to wait before execution.
-     * @param callable $callback The callback to invoke.
-     *
-     * @return TimerInterface
+     * {@inheritDoc}
      */
+    // phpcs:disable
     public function addPeriodicTimer($interval, $callback)
     {
         $loopTimer = $this->loop->addPeriodicTimer(
             $interval,
-            function () use (&$loopTimer, $callback, $interval) {
+            function () use (&$loopTimer, $callback, $interval): void {
                 $this->emit('periodicTimerTick', [$interval, $callback, $loopTimer]);
                 $callback($loopTimer);
             }
@@ -133,59 +104,46 @@ final class LoopDecorator implements LoopInterface, EventEmitterInterface
         return $loopTimer;
     }
 
-    /**
-     * Cancel a pending timer.
-     *
-     * @param TimerInterface $timer The timer to cancel.
-     */
-    public function cancelTimer(TimerInterface $timer)
+    public function cancelTimer(TimerInterface $timer): void
     {
         $this->emit('cancelTimer', [$timer]);
 
-        return $this->loop->cancelTimer($timer);
+        $this->loop->cancelTimer($timer);
     }
 
     /**
-     * Schedule a callback to be invoked on a future tick of the event loop.
-     *
-     * Callbacks are guaranteed to be executed in the order they are enqueued.
-     *
-     * @param callable $listener The callback to invoke.
+     * {@inheritDoc}
      */
-    public function futureTick($listener)
+    public function futureTick($listener): void
     {
         $this->emit('futureTick', [$listener]);
 
-        return $this->loop->futureTick(function () use ($listener) {
+        $this->loop->futureTick(function () use ($listener): void {
             $this->emit('futureTickTick', [$listener]);
             $listener($this);
         });
     }
 
-    /**
-     * Run the event loop until there are no more tasks to perform.
-     */
-    public function run()
+    public function run(): void
     {
         $this->emit('runStart');
         $this->loop->run();
         $this->emit('runDone');
     }
 
-    /**
-     * Instruct a running event loop to stop.
-     */
-    public function stop()
+    public function stop(): void
     {
         $this->emit('stopStart');
         $this->loop->stop();
         $this->emit('stopDone');
     }
 
-    public function addSignal($signal, $listener)
+    public function addSignal($signal, $listener): void
     {
-        $listenerId = spl_object_hash($listener);
-        $wrapper = function ($signal) use ($listener) {
+        /** @psalm-suppress InvalidArgument */
+        $listenerId                                  = spl_object_hash($listener);
+        /** @psalm-suppress MissingClosureParamType */
+        $wrapper                                     = function ($signal) use ($listener): void {
             $this->emit('signalTick', [$signal, $listener]);
             $listener($signal);
         };
@@ -194,14 +152,13 @@ final class LoopDecorator implements LoopInterface, EventEmitterInterface
         $this->loop->addSignal($signal, $wrapper);
     }
 
-    public function removeSignal($signal, $listener)
+    public function removeSignal($signal, $listener): void
     {
+        /** @psalm-suppress InvalidArgument */
         $listenerId = spl_object_hash($listener);
-        $wrapper = $this->signalListeners[$signal][$listenerId];
+        $wrapper    = $this->signalListeners[$signal][$listenerId];
         unset($this->signalListeners[$signal][$listenerId]);
         $this->emit('removeSignal', [$signal, $listener]);
         $this->loop->removeSignal($signal, $wrapper);
     }
-
-
 }

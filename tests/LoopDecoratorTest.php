@@ -1,141 +1,151 @@
 <?php declare(strict_types=1);
 
-namespace ReactInspector\EventLoop\Tests;
+namespace ReactInspector\Tests\EventLoop;
 
-use Phake;
 use Prophecy\Argument;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use ReactInspector\EventLoop\LoopDecorator;
 use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
+use const SIGINT;
 
-/**
- * @internal
- */
-class LoopDecoratorTest extends AsyncTestCase
+/** @internal */
+final class LoopDecoratorTest extends AsyncTestCase
 {
+    private int $signal = -1;
+
     public function testAddReadStream(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
-        $decoratedLoop = new LoopDecorator($loop);
-
         $called = [
             'listener' => false,
             'addReadStream' => false,
             'readStreamTick' => false,
         ];
-
         $stream = 'abc';
+
+        $loopProphecy  = $this->prophesize(LoopInterface::class);
+        $loop          = $loopProphecy->reveal();
+        $decoratedLoop = new LoopDecorator($loop);
+
+        // phpcs:disable
         $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $decoratedLoop): void {
-            $this->assertSame($stream, $passedStream);
-            $this->assertSame($decoratedLoop, $passedLoop);
+            self::assertSame($stream, $passedStream);
+            self::assertSame($decoratedLoop, $passedLoop);
             $called['listener'] = true;
         };
-        $decoratedLoop->on('addReadStream', function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            $this->assertSame($stream, $passedStream);
-            $this->assertSame($listener, $passedListener);
+
+        $loopProphecy->addReadStream($stream, Argument::type('callable'))->shouldBeCalled()->will(function (array $args) use ($loop): void {
+            [$stream, $listener] = $args;
+            $listener($stream, $loop);
+        });
+        // phpcs:enable
+
+        $decoratedLoop->on('addReadStream', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
+            self::assertSame($stream, $passedStream);
+            self::assertSame($listener, $passedListener);
             $called['addReadStream'] = true;
         });
-        $decoratedLoop->on('readStreamTick', function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            $this->assertSame($stream, $passedStream);
-            $this->assertSame($listener, $passedListener);
+        $decoratedLoop->on('readStreamTick', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
+            self::assertSame($stream, $passedStream);
+            self::assertSame($listener, $passedListener);
             $called['readStreamTick'] = true;
-        });
-
-        Phake::when($loop)->addReadStream($stream, $listener)->thenReturnCallback(function ($stream, $listener) use ($loop): void {
-            $listener($stream, $loop);
         });
 
         $decoratedLoop->addReadStream($stream, $listener);
 
         foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
+            self::assertTrue($call, $key);
         }
-
-        Phake::verify($loop)->addReadStream($stream, $listener);
     }
 
     public function testAddWriteStream(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
-        $decoratedLoop = new LoopDecorator($loop);
-
         $called = [
             'listener' => false,
             'addWriteStream' => false,
             'writeStreamTick' => false,
         ];
-
         $stream = 'abc';
+
+        $loopProphecy  = $this->prophesize(LoopInterface::class);
+        $loop          = $loopProphecy->reveal();
+        $decoratedLoop = new LoopDecorator($loop);
+
+        // phpcs:disable
         $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $decoratedLoop): void {
-            $this->assertSame($stream, $passedStream);
-            $this->assertSame($decoratedLoop, $passedLoop);
+            self::assertSame($stream, $passedStream);
+            self::assertSame($decoratedLoop, $passedLoop);
             $called['listener'] = true;
         };
-        $decoratedLoop->on('addWriteStream', function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            $this->assertSame($stream, $passedStream);
-            $this->assertSame($listener, $passedListener);
+
+        $loopProphecy->addWriteStream($stream, Argument::type('callable'))->shouldBeCalled()->will(function (array $args) use ($loop): void {
+            [$stream, $listener] = $args;
+            $listener($stream, $loop);
+        });
+        // phpcs:enable
+
+        $decoratedLoop->on('addWriteStream', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
+            self::assertSame($stream, $passedStream);
+            self::assertSame($listener, $passedListener);
             $called['addWriteStream'] = true;
         });
-        $decoratedLoop->on('writeStreamTick', function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            $this->assertSame($stream, $passedStream);
-            $this->assertSame($listener, $passedListener);
+        $decoratedLoop->on('writeStreamTick', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
+            self::assertSame($stream, $passedStream);
+            self::assertSame($listener, $passedListener);
             $called['writeStreamTick'] = true;
-        });
-
-        Phake::when($loop)->addWriteStream($stream, $listener)->thenReturnCallback(function ($stream, $listener) use ($loop): void {
-            $listener($stream, $loop);
         });
 
         $decoratedLoop->addWriteStream($stream, $listener);
 
         foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
+            self::assertTrue($call, $key);
         }
-
-        Phake::verify($loop)->addWriteStream($stream, $listener);
     }
 
     public function testRemoveReadStream(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
-        $decoratedLoop = new LoopDecorator($loop);
-
         $called = false;
         $stream = 'abc';
-        $decoratedLoop->on('removeReadStream', function ($passedStream) use (&$called, $stream): void {
-            $this->assertSame($stream, $passedStream);
+
+        $loopProphecy = $this->prophesize(LoopInterface::class);
+        $loopProphecy->removeReadStream($stream)->shouldBeCalled();
+        $loop          = $loopProphecy->reveal();
+        $decoratedLoop = new LoopDecorator($loop);
+
+        $decoratedLoop->on('removeReadStream', static function ($passedStream) use (&$called, $stream): void {
+            self::assertSame($stream, $passedStream);
             $called = true;
         });
 
         $decoratedLoop->removeReadStream($stream);
 
-        $this->assertTrue($called);
-        Phake::verify($loop)->removeReadStream($stream);
+        self::assertTrue($called);
     }
 
     public function testRemoveWriteStream(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
-        $decoratedLoop = new LoopDecorator($loop);
-
         $called = false;
         $stream = 'abc';
-        $decoratedLoop->on('removeWriteStream', function ($passedStream) use (&$called, $stream): void {
-            $this->assertSame($stream, $passedStream);
+
+        $loopProphecy = $this->prophesize(LoopInterface::class);
+        $loopProphecy->removeWriteStream($stream)->shouldBeCalled();
+        $loop          = $loopProphecy->reveal();
+        $decoratedLoop = new LoopDecorator($loop);
+
+        $decoratedLoop->on('removeWriteStream', static function ($passedStream) use (&$called, $stream): void {
+            self::assertSame($stream, $passedStream);
             $called = true;
         });
 
         $decoratedLoop->removeWriteStream($stream);
 
-        $this->assertTrue($called);
-        Phake::verify($loop)->removeWriteStream($stream);
+        self::assertTrue($called);
     }
 
     public function testAddTimer(): void
     {
-        $loop = Factory::create();
+        $loop          = Factory::create();
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -145,20 +155,20 @@ class LoopDecoratorTest extends AsyncTestCase
         ];
 
         $interval = 0.123;
-        $listener = function ($timer) use (&$called): void {
-            $this->assertInstanceOf(TimerInterface::class, $timer);
+        $listener = static function ($timer) use (&$called): void {
+            self::assertInstanceOf(TimerInterface::class, $timer);
             $called['listener'] = true;
         };
-        $decoratedLoop->on('addTimer', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener): void {
-            $this->assertSame($interval, $passedInterval);
-            $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf(TimerInterface::class, $timer);
+        $decoratedLoop->on('addTimer', static function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener): void {
+            self::assertSame($interval, $passedInterval);
+            self::assertSame($listener, $passedListener);
+            self::assertInstanceOf(TimerInterface::class, $timer);
             $called['addTimer'] = true;
         });
-        $decoratedLoop->on('timerTick', function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener): void {
-            $this->assertSame($interval, $passedInterval);
-            $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf(TimerInterface::class, $timer);
+        $decoratedLoop->on('timerTick', static function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener): void {
+            self::assertSame($interval, $passedInterval);
+            self::assertSame($listener, $passedListener);
+            self::assertInstanceOf(TimerInterface::class, $timer);
             $called['timerTick'] = true;
         });
 
@@ -167,13 +177,13 @@ class LoopDecoratorTest extends AsyncTestCase
         $decoratedLoop->run();
 
         foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
+            self::assertTrue($call, $key);
         }
     }
 
     public function testAddPeriodicTimer(): void
     {
-        $loop = Factory::create();
+        $loop          = Factory::create();
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -183,21 +193,21 @@ class LoopDecoratorTest extends AsyncTestCase
         ];
 
         $interval = 0.123;
-        $listener = function ($timer) use (&$called, $loop): void {
-            $this->assertInstanceOf(TimerInterface::class, $timer);
+        $listener = static function ($timer) use (&$called, $loop): void {
+            self::assertInstanceOf(TimerInterface::class, $timer);
             $called['listener'] = true;
             $loop->cancelTimer($timer);
         };
-        $decoratedLoop->on('addPeriodicTimer', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener): void {
-            $this->assertSame($interval, $passedInterval);
-            $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf(TimerInterface::class, $passedTimer);
+        $decoratedLoop->on('addPeriodicTimer', static function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener): void {
+            self::assertSame($interval, $passedInterval);
+            self::assertSame($listener, $passedListener);
+            self::assertInstanceOf(TimerInterface::class, $passedTimer);
             $called['addPeriodicTimer'] = true;
         });
-        $decoratedLoop->on('periodicTimerTick', function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener): void {
-            $this->assertSame($interval, $passedInterval);
-            $this->assertSame($listener, $passedListener);
-            $this->assertInstanceOf(TimerInterface::class, $passedTimer);
+        $decoratedLoop->on('periodicTimerTick', static function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener): void {
+            self::assertSame($interval, $passedInterval);
+            self::assertSame($listener, $passedListener);
+            self::assertInstanceOf(TimerInterface::class, $passedTimer);
             $called['periodicTimerTick'] = true;
         });
 
@@ -206,33 +216,46 @@ class LoopDecoratorTest extends AsyncTestCase
         $decoratedLoop->run();
 
         foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
+            self::assertTrue($call, $key);
         }
     }
 
     public function testCancelTimer(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
-        $timer = Phake::mock(TimerInterface::class);
+        $timer = $this->prophesize(TimerInterface::class)->reveal();
 
-        $decoratedLoop = new LoopDecorator($loop);
+        $loop = $this->prophesize(LoopInterface::class);
+        $loop->cancelTimer($timer)->shouldBeCalled();
+
+        $decoratedLoop = new LoopDecorator($loop->reveal());
 
         $called = false;
-        $decoratedLoop->on('cancelTimer', function ($passedTimer) use (&$called, $timer): void {
-            $this->assertSame($timer, $passedTimer);
+        $decoratedLoop->on('cancelTimer', static function ($passedTimer) use (&$called, $timer): void {
+            self::assertSame($timer, $passedTimer);
             $called = true;
         });
 
         $decoratedLoop->cancelTimer($timer);
 
-        $this->assertTrue($called);
-        Phake::verify($loop)->cancelTimer($timer);
+        self::assertTrue($called);
     }
 
     public function testFutureTick(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
-        $decoratedLoop = new LoopDecorator($loop);
+        $loop = $this->prophesize(LoopInterface::class);
+
+        // phpcs:disable
+        $listener = function () use (&$called): void {
+            $called['listener'] = true;
+        };
+
+        $loop->futureTick(Argument::type('callable'))->shouldBeCalled()->will(function ($args) use ($loop): void {
+            [$listener] = $args;
+            $listener($loop);
+        });
+        // phpcs:enable
+
+        $decoratedLoop = new LoopDecorator($loop->reveal());
 
         $called = [
             'listener' => false,
@@ -240,57 +263,52 @@ class LoopDecoratorTest extends AsyncTestCase
             'futureTickTick' => false,
         ];
 
-        $listener = function () use (&$called): void {
-            $called['listener'] = true;
-        };
-        $decoratedLoop->on('futureTick', function ($passedListener) use (&$called, $listener): void {
-            $this->assertSame($listener, $passedListener);
+        $decoratedLoop->on('futureTick', static function ($passedListener) use (&$called, $listener): void {
+            self::assertSame($listener, $passedListener);
             $called['futureTick'] = true;
         });
-        $decoratedLoop->on('futureTickTick', function ($passedListener) use (&$called, $listener): void {
-            $this->assertSame($listener, $passedListener);
+        $decoratedLoop->on('futureTickTick', static function ($passedListener) use (&$called, $listener): void {
+            self::assertSame($listener, $passedListener);
             $called['futureTickTick'] = true;
-        });
-
-        Phake::when($loop)->futureTick($listener)->thenReturnCallback(function ($listener) use ($loop): void {
-            $listener($loop);
         });
 
         $decoratedLoop->futureTick($listener);
 
         foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
+            self::assertTrue($call, $key);
         }
-
-        Phake::verify($loop)->futureTick($listener);
     }
 
     public function testSignal(): void
     {
         $func = function (int $signal): void {
+            self::assertNotSame($this->signal, $signal);
         };
 
         $loop = $this->prophesize(LoopInterface::class);
-        $loop->addSignal(\SIGINT, Argument::type('callable'))->shouldBeCalled()->will(function ($args): void {
+        // phpcs:disable
+        $loop->addSignal(SIGINT, Argument::type('callable'))->shouldBeCalled()->will(function ($args): void {
             [$signal, $listener] = $args;
             $listener($signal);
         });
-        $loop->removeSignal(\SIGINT, Argument::type('callable'))->shouldBeCalled();
+        // phpcs:enable
+        $loop->removeSignal(SIGINT, Argument::type('callable'))->shouldBeCalled();
 
         $decoratedLoop = new LoopDecorator($loop->reveal());
         $decoratedLoop->on('addSignal', $this->expectCallableOnce());
         $decoratedLoop->on('signalTick', $this->expectCallableOnce());
         $decoratedLoop->on('removeSignal', $this->expectCallableOnce());
 
-        $decoratedLoop->addSignal(\SIGINT, $func);
-        $decoratedLoop->removeSignal(\SIGINT, $func);
+        $decoratedLoop->addSignal(SIGINT, $func);
+        $decoratedLoop->removeSignal(SIGINT, $func);
     }
 
     public function testRun(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
+        $loop = $this->prophesize(LoopInterface::class);
+        $loop->run()->shouldBeCalled();
 
-        $decoratedLoop = new LoopDecorator($loop);
+        $decoratedLoop = new LoopDecorator($loop->reveal());
 
         $called = [
             'runStart' => false,
@@ -299,25 +317,24 @@ class LoopDecoratorTest extends AsyncTestCase
 
         foreach ($called as $key => $call) {
             $eventKey = $key;
-            $decoratedLoop->on($eventKey, function () use (&$called, $eventKey): void {
-                $called[$eventKey]= true;
+            $decoratedLoop->on($eventKey, static function () use (&$called, $eventKey): void {
+                $called[$eventKey] = true;
             });
         }
 
         $decoratedLoop->run();
 
         foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
+            self::assertTrue($call, $key);
         }
-
-        Phake::verify($loop)->run();
     }
 
     public function testStop(): void
     {
-        $loop = Phake::mock(LoopInterface::class);
+        $loop = $this->prophesize(LoopInterface::class);
+        $loop->stop()->shouldBeCalled();
 
-        $decoratedLoop = new LoopDecorator($loop);
+        $decoratedLoop = new LoopDecorator($loop->reveal());
 
         $called = [
             'stopStart' => false,
@@ -326,17 +343,15 @@ class LoopDecoratorTest extends AsyncTestCase
 
         foreach ($called as $key => $call) {
             $eventKey = $key;
-            $decoratedLoop->on($eventKey, function () use (&$called, $eventKey): void {
-                $called[$eventKey]= true;
+            $decoratedLoop->on($eventKey, static function () use (&$called, $eventKey): void {
+                $called[$eventKey] = true;
             });
         }
 
         $decoratedLoop->stop();
 
         foreach ($called as $key => $call) {
-            $this->assertTrue($call, $key);
+            self::assertTrue($call, $key);
         }
-
-        Phake::verify($loop)->stop();
     }
 }

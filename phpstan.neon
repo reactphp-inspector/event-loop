@@ -1,0 +1,13 @@
+parameters:
+	ignoreErrors:
+		- '#Parameter \#1 \$obj of function spl_object_hash expects object, callable given.#'
+		- '#Parameter \#1 \$stream of method ReactInspector\\EventLoop\\LoopDecorator\:\:addReadStream\(\) expects resource, string given.#'
+		- '#Parameter \#1 \$stream of method ReactInspector\\EventLoop\\LoopDecorator\:\:addWriteStream\(\) expects resource, string given.#'
+		- '#Parameter \#1 \$stream of method ReactInspector\\EventLoop\\LoopDecorator\:\:removeReadStream\(\) expects resource, string given.#'
+		- '#Parameter \#1 \$stream of method ReactInspector\\EventLoop\\LoopDecorator\:\:removeWriteStream\(\) expects resource, string given.#'
+	ergebnis:
+		classesAllowedToBeExtended:
+			- InvalidArgumentException
+
+includes:
+	- vendor/wyrihaximus/async-test-utilities/rules.neon

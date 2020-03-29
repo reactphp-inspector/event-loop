@@ -12,43 +12,27 @@ use ReactInspector\Tag;
 use ReactInspector\Tags;
 use Rx\Observable;
 use function ApiClients\Tools\Rx\observableFromArray;
+use function array_key_exists;
+use function count;
+use function spl_object_hash;
+use const WyriHaximus\Constants\Boolean\TRUE_;
 
 final class LoopCollector implements CollectorInterface
 {
-    /**
-     * @var LoopDecorator
-     */
-    private $loop;
+    /** @var array<int, resource> */
+    private array $streamsRead = [];
 
-    /**
-     * @var array
-     */
-    private $counters = [];
+    /** @var array<int, resource> */
+    private array $streamsWrite = [];
 
-    /**
-     * @var array
-     */
-    private $streamsRead = [];
+    /** @var array<int, resource> */
+    private array $streamsDuplex = [];
 
-    /**
-     * @var array
-     */
-    private $streamsWrite = [];
+    /** @var array<string, bool> */
+    private array $timers = [];
 
-    /**
-     * @var array
-     */
-    private $streamsDuplex = [];
-
-    /**
-     * @var TimerInterface[]
-     */
-    private $timers = [];
-
-    /**
-     * @var int[]
-     */
-    private $metrics = [
+    /** @var array<string, int> */
+    private array $metrics = [
         'signals.ticks' => 0,
         'streams.read.ticks' => 0,
         'streams.duplex.ticks' => 0,
@@ -72,13 +56,8 @@ final class LoopCollector implements CollectorInterface
         'timers.once.current' => 0,
     ];
 
-    /**
-     * @param LoopDecorator $loop
-     */
     public function __construct(LoopDecorator $loop)
     {
-        $this->loop = $loop;
-
         $this->setupTicks($loop);
         $this->setupTimers($loop);
         $this->setupStreams($loop);
@@ -99,24 +78,27 @@ final class LoopCollector implements CollectorInterface
 
     private function setupTimers(LoopDecorator $loop): void
     {
-        $loop->on('addTimer', function ($_, $__, $timer): void {
-            $this->timers[\spl_object_hash($timer)] = true;
+        /** @psalm-suppress MissingClosureParamType */
+        $loop->on('addTimer', function ($void, $null, $timer): void {
+            $this->timers[spl_object_hash($timer)] = TRUE_;
             $this->metrics['timers.once.current']++;
             $this->metrics['timers.once.total']++;
         });
-        $loop->on('timerTick', function ($_, $__, $timer): void {
+        /** @psalm-suppress MissingClosureParamType */
+        $loop->on('timerTick', function ($void, $null, $timer): void {
             $this->metrics['timers.once.current']--;
             $this->metrics['timers.once.ticks']++;
 
-            $hash = \spl_object_hash($timer);
-            if (!isset($this->timers[$hash])) {
+            $hash = spl_object_hash($timer);
+            if (! array_key_exists($hash, $this->timers)) {
                 return;
             }
 
             unset($this->timers[$hash]);
         });
-        $loop->on('addPeriodicTimer', function ($_, $__, $timer): void {
-            $this->timers[\spl_object_hash($timer)] = true;
+        /** @psalm-suppress MissingClosureParamType */
+        $loop->on('addPeriodicTimer', function ($void, $null, $timer): void {
+            $this->timers[spl_object_hash($timer)] = TRUE_;
             $this->metrics['timers.periodic.current']++;
             $this->metrics['timers.periodic.total']++;
         });
@@ -124,8 +106,8 @@ final class LoopCollector implements CollectorInterface
             $this->metrics['timers.periodic.ticks']++;
         });
         $loop->on('cancelTimer', function (TimerInterface $timer): void {
-            $hash = \spl_object_hash($timer);
-            if (!isset($this->timers[$hash])) {
+            $hash = spl_object_hash($timer);
+            if (! array_key_exists($hash, $this->timers)) {
                 return;
             }
 
@@ -143,67 +125,77 @@ final class LoopCollector implements CollectorInterface
 
     private function setupStreams(LoopDecorator $loop): void
     {
+        /** @psalm-suppress MissingClosureParamType */
         $loop->on('addReadStream', function ($stream): void {
             $key = (int) $stream;
 
-            $this->streamsRead[$key] = $stream;
+            $this->streamsRead[$key]   = $stream;
             $this->streamsDuplex[$key] = $stream;
 
-            $this->metrics['streams.read.current'] = \count($this->streamsRead);
-            $this->metrics['streams.duplex.current'] = \count($this->streamsDuplex);
+            $this->metrics['streams.read.current']   = count($this->streamsRead);
+            $this->metrics['streams.duplex.current'] = count($this->streamsDuplex);
             $this->metrics['streams.read.total']++;
-            if (!isset($this->streamsWrite[$key])) {
-                $this->metrics['streams.duplex.total']++;
+            if (array_key_exists($key, $this->streamsWrite)) {
+                return;
             }
+
+            $this->metrics['streams.duplex.total']++;
         });
         $loop->on('readStreamTick', function (): void {
             $this->metrics['streams.read.ticks']++;
             $this->metrics['streams.duplex.ticks']++;
         });
+        /** @psalm-suppress MissingClosureParamType */
         $loop->on('removeReadStream', function ($stream): void {
             $key = (int) $stream;
 
-            if (isset($this->streamsRead[$key])) {
+            if (array_key_exists($key, $this->streamsRead)) {
                 unset($this->streamsRead[$key]);
             }
-            if (isset($this->streamsDuplex[$key]) && !isset($this->streamsWrite[$key])) {
+
+            if (array_key_exists($key, $this->streamsRead) && ! array_key_exists($key, $this->streamsWrite)) {
                 unset($this->streamsDuplex[$key]);
             }
 
-            $this->metrics['streams.read.current'] = \count($this->streamsRead);
-            $this->metrics['streams.duplex.current'] = \count($this->streamsDuplex);
+            $this->metrics['streams.read.current']   = count($this->streamsRead);
+            $this->metrics['streams.duplex.current'] = count($this->streamsDuplex);
         });
 
+        /** @psalm-suppress MissingClosureParamType */
         $loop->on('addWriteStream', function ($stream): void {
             $key = (int) $stream;
 
-            $this->streamsWrite[$key] = $stream;
+            $this->streamsWrite[$key]  = $stream;
             $this->streamsDuplex[$key] = $stream;
 
-            $this->metrics['streams.write.current'] = \count($this->streamsWrite);
-            $this->metrics['streams.duplex.current'] = \count($this->streamsDuplex);
+            $this->metrics['streams.write.current']  = count($this->streamsWrite);
+            $this->metrics['streams.duplex.current'] = count($this->streamsDuplex);
             $this->metrics['streams.write.total']++;
 
-            if (!isset($this->streamsRead[$key])) {
-                $this->metrics['streams.duplex.total']++;
+            if (array_key_exists($key, $this->streamsRead)) {
+                return;
             }
+
+            $this->metrics['streams.duplex.total']++;
         });
         $loop->on('writeStreamTick', function (): void {
             $this->metrics['streams.write.ticks']++;
             $this->metrics['streams.duplex.ticks']++;
         });
+        /** @psalm-suppress MissingClosureParamType */
         $loop->on('removeWriteStream', function ($stream): void {
             $key = (int) $stream;
 
-            if (isset($this->streamsWrite[$key])) {
+            if (array_key_exists($key, $this->streamsWrite)) {
                 unset($this->streamsWrite[$key]);
             }
-            if (isset($this->streamsDuplex[$key]) && !isset($this->streamsRead[$key])) {
+
+            if (array_key_exists($key, $this->streamsRead) && ! array_key_exists($key, $this->streamsRead)) {
                 unset($this->streamsDuplex[$key]);
             }
 
-            $this->metrics['streams.write.current'] = \count($this->streamsWrite);
-            $this->metrics['streams.duplex.current'] = \count($this->streamsDuplex);
+            $this->metrics['streams.write.current']  = count($this->streamsWrite);
+            $this->metrics['streams.duplex.current'] = count($this->streamsDuplex);
         });
     }
 
@@ -224,7 +216,7 @@ final class LoopCollector implements CollectorInterface
     public function collect(): Observable
     {
         return observableFromArray([
-            new Metric(
+            Metric::create(
                 new Config(
                     'reactphp_ticks',
                     'gauge',
@@ -292,7 +284,7 @@ final class LoopCollector implements CollectorInterface
                     ),
                 )
             ),
-            new Metric(
+            Metric::create(
                 new Config(
                     'reactphp_signals',
                     'gauge',
@@ -318,7 +310,7 @@ final class LoopCollector implements CollectorInterface
                     ),
                 )
             ),
-            new Metric(
+            Metric::create(
                 new Config(
                     'reactphp_streams',
                     'gauge',
@@ -378,7 +370,7 @@ final class LoopCollector implements CollectorInterface
                     ),
                 )
             ),
-            new Metric(
+            Metric::create(
                 new Config(
                     'reactphp_timers',
                     'gauge',
