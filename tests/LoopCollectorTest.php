@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace ReactInspector\Tests\EventLoop;
 
@@ -13,6 +15,7 @@ use ReactInspector\Metric;
 use ReactInspector\Tag;
 use Rx\Observable;
 use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
+
 use function ApiClients\Tools\Rx\observableFromArray;
 use function array_filter;
 use function count;
@@ -39,7 +42,7 @@ final class LoopCollectorTest extends AsyncTestCase
     public function testFutureTick(): void
     {
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'ticks'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'ticks'));
         self::assertCount(3, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value());
@@ -66,7 +69,7 @@ final class LoopCollectorTest extends AsyncTestCase
         $this->loop->run();
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'ticks'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'ticks'));
         self::assertCount(3, $measurements);
         foreach ($measurements as $measurement) {
             if ($this->hasTagAndValue($measurement, ['future_tick_state' => 'active'])) {
@@ -81,14 +84,14 @@ final class LoopCollectorTest extends AsyncTestCase
     public function testTimer(): void
     {
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'));
         self::assertCount(4, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value());
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value(), (string) $measurement);
@@ -113,7 +116,7 @@ final class LoopCollectorTest extends AsyncTestCase
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value(), (string) $measurement);
@@ -122,7 +125,7 @@ final class LoopCollectorTest extends AsyncTestCase
         $this->loop->run();
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'));
         self::assertCount(4, $measurements);
         foreach ($measurements as $measurement) {
             if ($this->hasTagAndValue($measurement, ['timer_state' => 'done', 'timer_kind' => 'once'])) {
@@ -134,7 +137,7 @@ final class LoopCollectorTest extends AsyncTestCase
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             if ($this->hasTagAndValue($measurement, ['timer_kind' => 'once'])) {
@@ -149,14 +152,14 @@ final class LoopCollectorTest extends AsyncTestCase
     public function testTimerCanceledBeforeCalled(): void
     {
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'));
         self::assertCount(4, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value());
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value(), (string) $measurement);
@@ -186,7 +189,7 @@ final class LoopCollectorTest extends AsyncTestCase
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value(), (string) $measurement);
@@ -210,7 +213,7 @@ final class LoopCollectorTest extends AsyncTestCase
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value(), (string) $measurement);
@@ -220,14 +223,14 @@ final class LoopCollectorTest extends AsyncTestCase
     public function testPeriodicTimer(): void
     {
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'));
         self::assertCount(4, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value());
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value(), (string) $measurement);
@@ -258,7 +261,7 @@ final class LoopCollectorTest extends AsyncTestCase
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value(), (string) $measurement);
@@ -267,7 +270,7 @@ final class LoopCollectorTest extends AsyncTestCase
         $this->loop->run();
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_timers', 'timers'));
         self::assertCount(4, $measurements);
         foreach ($measurements as $measurement) {
             if ($this->hasTagAndValue($measurement, ['timer_state' => 'done', 'timer_kind' => 'periodic'])) {
@@ -279,7 +282,7 @@ final class LoopCollectorTest extends AsyncTestCase
         }
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_ticks', 'timers'));
         self::assertCount(2, $measurements);
         foreach ($measurements as $measurement) {
             if ($this->hasTagAndValue($measurement, ['timer_kind' => 'periodic'])) {
@@ -294,7 +297,7 @@ final class LoopCollectorTest extends AsyncTestCase
     public function testAddReadStream(): void
     {
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'));
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value());
@@ -306,10 +309,11 @@ final class LoopCollectorTest extends AsyncTestCase
         });
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'));
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'active']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'active']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'active'])
             ) {
                 self::assertSame(1.0, $measurement->value(), (string) $measurement);
@@ -322,10 +326,11 @@ final class LoopCollectorTest extends AsyncTestCase
         $this->loop->removeReadStream($stream);
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'));
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'done']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'done']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'done'])
             ) {
 //                self::assertSame(1.0, $measurement->value(), (string) $measurement);
@@ -339,7 +344,7 @@ final class LoopCollectorTest extends AsyncTestCase
     public function testAddWriteStream(): void
     {
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'));
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value());
@@ -351,10 +356,11 @@ final class LoopCollectorTest extends AsyncTestCase
         });
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'));
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'active']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'active']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'write', 'stream_state' => 'active'])
             ) {
                 self::assertSame(1.0, $measurement->value(), (string) $measurement);
@@ -367,10 +373,11 @@ final class LoopCollectorTest extends AsyncTestCase
         $this->loop->removeWriteStream($stream);
 
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'));
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'done']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'done']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'write', 'stream_state' => 'done'])
             ) {
 //                self::assertSame(1.0, $measurement->value(), (string) $measurement);
@@ -384,7 +391,7 @@ final class LoopCollectorTest extends AsyncTestCase
     public function testComplexReadWriteDuplexStreams(): void
     {
         /** @var Measurement[] $measurements */
-        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'), $this->loop);
+        $measurements = $this->await($this->getMeasurements('reactphp_streams', 'streams'));
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
             self::assertSame(0.0, $measurement->value());
@@ -411,7 +418,8 @@ final class LoopCollectorTest extends AsyncTestCase
                 continue;
             }
 
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'active']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'active']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'write', 'stream_state' => 'active'])
             ) {
                 self::assertSame(1.0, $measurement->value(), (string) $measurement);
@@ -438,7 +446,8 @@ final class LoopCollectorTest extends AsyncTestCase
                 continue;
             }
 
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'active']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'active']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'write', 'stream_state' => 'active'])
             ) {
                 self::assertSame(2.0, $measurement->value(), (string) $measurement);
@@ -475,14 +484,16 @@ final class LoopCollectorTest extends AsyncTestCase
         });
         self::assertCount(6, $measurements);
         foreach ($measurements as $measurement) {
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'done']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'done']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'done'])
             ) {
 //                self::assertSame(2.0, $measurement->value(), (string) $measurement);
                 continue;
             }
 
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'active']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'duplex', 'stream_state' => 'active']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'write', 'stream_state' => 'active']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'write', 'stream_state' => 'done'])
             ) {
@@ -507,7 +518,8 @@ final class LoopCollectorTest extends AsyncTestCase
                 continue;
             }
 
-            if ($this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'done']) ||
+            if (
+                $this->hasTagAndValue($measurement, ['stream_kind' => 'read', 'stream_state' => 'done']) ||
                 $this->hasTagAndValue($measurement, ['stream_kind' => 'write', 'stream_state' => 'done'])
             ) {
                 self::assertSame(2.0, $measurement->value(), (string) $measurement);

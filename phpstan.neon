@@ -1,6 +1,5 @@
 parameters:
 	ignoreErrors:
-		- '#Parameter \#1 \$obj of function spl_object_hash expects object, callable given.#'
 		- '#Parameter \#1 \$stream of method ReactInspector\\EventLoop\\LoopDecorator\:\:addReadStream\(\) expects resource, string given.#'
 		- '#Parameter \#1 \$stream of method ReactInspector\\EventLoop\\LoopDecorator\:\:addWriteStream\(\) expects resource, string given.#'
 		- '#Parameter \#1 \$stream of method ReactInspector\\EventLoop\\LoopDecorator\:\:removeReadStream\(\) expects resource, string given.#'
