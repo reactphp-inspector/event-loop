@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace ReactInspector\EventLoop;
 
@@ -11,10 +13,12 @@ use ReactInspector\Metric;
 use ReactInspector\Tag;
 use ReactInspector\Tags;
 use Rx\Observable;
+
 use function ApiClients\Tools\Rx\observableFromArray;
 use function array_key_exists;
 use function count;
 use function spl_object_hash;
+
 use const WyriHaximus\Constants\Boolean\TRUE_;
 
 final class LoopCollector implements CollectorInterface

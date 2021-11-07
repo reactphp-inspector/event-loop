@@ -1,13 +1,16 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace ReactInspector\Tests\EventLoop;
 
 use Prophecy\Argument;
-use React\EventLoop\Factory;
+use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use ReactInspector\EventLoop\LoopDecorator;
 use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
+
 use const SIGINT;
 
 /** @internal */
@@ -145,7 +148,7 @@ final class LoopDecoratorTest extends AsyncTestCase
 
     public function testAddTimer(): void
     {
-        $loop          = Factory::create();
+        $loop          = Loop::get();
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [
@@ -183,7 +186,7 @@ final class LoopDecoratorTest extends AsyncTestCase
 
     public function testAddPeriodicTimer(): void
     {
-        $loop          = Factory::create();
+        $loop          = Loop::get();
         $decoratedLoop = new LoopDecorator($loop);
 
         $called = [

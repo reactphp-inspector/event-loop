@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace ReactInspector\EventLoop;
 
@@ -6,6 +8,7 @@ use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
+
 use function spl_object_hash;
 
 final class LoopDecorator implements LoopInterface, EventEmitterInterface
@@ -140,7 +143,10 @@ final class LoopDecorator implements LoopInterface, EventEmitterInterface
 
     public function addSignal($signal, $listener): void
     {
-        /** @psalm-suppress InvalidArgument */
+        /**
+         * @psalm-suppress InvalidArgument
+         * @phpstan-ignore-next-line
+         */
         $listenerId                                  = spl_object_hash($listener);
         /** @psalm-suppress MissingClosureParamType */
         $wrapper                                     = function ($signal) use ($listener): void {
@@ -154,7 +160,10 @@ final class LoopDecorator implements LoopInterface, EventEmitterInterface
 
     public function removeSignal($signal, $listener): void
     {
-        /** @psalm-suppress InvalidArgument */
+        /**
+         * @psalm-suppress InvalidArgument
+         * @phpstan-ignore-next-line
+         */
         $listenerId = spl_object_hash($listener);
         $wrapper    = $this->signalListeners[$signal][$listenerId];
         unset($this->signalListeners[$signal][$listenerId]);
