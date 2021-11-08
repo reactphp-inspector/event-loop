@@ -6,7 +6,10 @@
         ]
     },
     "logs": {
-        "text": "infection-log.txt"
+        "text": "./var/infection.log",
+        "summary": "./var/infection-summary.log",
+        "json": "./var/infection.json",
+        "perMutator": "./var/infection-per-mutator.md"
     },
     "mutators": {
         "@default": true,
@@ -18,5 +21,8 @@
         "MethodCallRemoval": false,
         "Increment": false,
         "Decrement": false
+    },
+    "phpUnit": {
+        "configDir": "./etc/qa/"
     }
 }

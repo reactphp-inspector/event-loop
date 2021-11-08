@@ -55,6 +55,9 @@ final class LoopDecoratorTest extends AsyncTestCase
             $called['readStreamTick'] = true;
         });
 
+        /**
+         * @phpstan-ignore-next-line
+         */
         $decoratedLoop->addReadStream($stream, $listener);
 
         foreach ($called as $key => $call) {
@@ -99,6 +102,9 @@ final class LoopDecoratorTest extends AsyncTestCase
             $called['writeStreamTick'] = true;
         });
 
+        /**
+         * @phpstan-ignore-next-line
+         */
         $decoratedLoop->addWriteStream($stream, $listener);
 
         foreach ($called as $key => $call) {
@@ -121,6 +127,9 @@ final class LoopDecoratorTest extends AsyncTestCase
             $called = true;
         });
 
+        /**
+         * @phpstan-ignore-next-line
+         */
         $decoratedLoop->removeReadStream($stream);
 
         self::assertTrue($called);
@@ -141,6 +150,9 @@ final class LoopDecoratorTest extends AsyncTestCase
             $called = true;
         });
 
+        /**
+         * @phpstan-ignore-next-line
+         */
         $decoratedLoop->removeWriteStream($stream);
 
         self::assertTrue($called);
