@@ -10,42 +10,50 @@
     }
   ],
   "require": {
-    "php": "^7.4 || ^8.0",
-    "evenement/evenement": "^3.0 || ^2.0",
-    "react-inspector/metric": "^1.0",
-    "react-inspector/metrics": "^1.0",
-    "react/event-loop": "^1.2",
-    "reactivex/rxphp": "^2.0",
-    "wyrihaximus/constants": "^1.4",
-    "wyrihaximus/iterator-or-array-to-array": "^1.1"
+    "php": "^8.2",
+    "react-inspector/global-state": "^1",
+    "react/event-loop": "^1.5",
+    "wyrihaximus/metrics": "^2.1",
+    "wyrihaximus/metrics-lazy-registry": "^2.0"
   },
   "require-dev": {
     "ext-pcntl": "*",
-    "thecodingmachine/safe": "^1.3.3",
-    "wyrihaximus/async-test-utilities": "^4.0.7"
-  },
-  "config": {
-    "platform": {
-      "php": "7.4.7"
-    },
-    "sort-packages": true
+    "wyrihaximus/async-test-utilities": "^8"
   },
   "autoload": {
     "psr-4": {
       "ReactInspector\\EventLoop\\": "src/"
-    }
+    },
+    "files": [
+      "src/bootstrap_include.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
       "ReactInspector\\Tests\\EventLoop\\": "tests/"
     }
   },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "ergebnis/composer-normalize": true,
+      "icanhazstring/composer-unused": true,
+      "infection/extension-installer": true,
+      "ocramius/package-versions": true
+    },
+    "platform": {
+      "php": "8.2.13"
+    },
+    "sort-packages": true
+  },
   "scripts": {
     "post-install-cmd": [
-      "composer normalize"
+      "composer normalize",
+      "composer update --lock --no-scripts"
     ],
     "post-update-cmd": [
-      "composer normalize"
+      "composer normalize",
+      "composer update --lock --no-scripts"
     ]
   }
 }
