@@ -10,12 +10,13 @@
   "packageRules": [
     {
       "matchManagers": ["composer"],
-      "matchDepTypes": ["devDependencies"],
-      "rangeStrategy": "auto"
+      "matchDepTypes": ["require-dev"],
+      "rangeStrategy": "bump"
     },
     {
       "matchManagers": ["composer"],
-      "rangeStrategy": "auto"
+      "matchDepTypes": ["require"],
+      "rangeStrategy": "widen"
     }
   ]
 }
