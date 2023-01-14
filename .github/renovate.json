@@ -6,6 +6,7 @@
   "composerIgnorePlatformReqs": null,
   "allowScripts": true,
   "allowPlugins": true,
+  "rangeStrategy": "update-lockfile",
   "enabledManagers": [
     "composer"
   ],
@@ -13,12 +14,12 @@
     {
       "matchManagers": ["composer"],
       "matchDepTypes": ["require-dev"],
-      "rangeStrategy": "update-lockfile"
+      "rangeStrategy": "bump"
     },
     {
       "matchManagers": ["composer"],
       "matchDepTypes": ["require"],
-      "rangeStrategy": "update-lockfile"
+      "rangeStrategy": "widen"
     }
   ]
 }
