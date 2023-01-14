@@ -13,12 +13,12 @@
     {
       "matchManagers": ["composer"],
       "matchDepTypes": ["require-dev"],
-      "rangeStrategy": "bump"
+      "rangeStrategy": "update-lockfile"
     },
     {
       "matchManagers": ["composer"],
       "matchDepTypes": ["require"],
-      "rangeStrategy": "widen"
+      "rangeStrategy": "update-lockfile"
     }
   ]
 }
