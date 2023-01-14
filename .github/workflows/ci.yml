@@ -11,7 +11,7 @@ jobs:
     outputs:
       package-name: ${{ steps.package-name.outputs.package-name }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - id: package-name
         run: |
           printf "::set-output name=package-name::[\"%s\"]" $(docker run --rm -v "`pwd`:`pwd`" jess/jq jq -r -c '.name' "${GITHUB_WORKSPACE}/composer.json")
@@ -24,7 +24,7 @@ jobs:
     outputs:
       version: ${{ steps.supported-versions-matrix.outputs.version }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - id: supported-versions-matrix
         uses: WyriHaximus/github-action-composer-php-versions-in-range@v1
         with:
@@ -38,7 +38,7 @@ jobs:
     outputs:
       check: ${{ steps.supported-checks-matrix.outputs.check }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - id: supported-checks-matrix
         name: Generate check
         run: |
@@ -58,7 +58,7 @@ jobs:
     container:
       image: ghcr.io/wyrihaximusnet/php:${{ matrix.php }}-nts-buster-dev-root
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Cache composer packages
         uses: actions/cache@v1
         with:
@@ -90,7 +90,7 @@ jobs:
     container:
       image: ghcr.io/wyrihaximusnet/php:${{ matrix.php }}-nts-buster-dev-root
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Cache composer packages
         uses: actions/cache@v1
         with:
@@ -116,7 +116,7 @@ jobs:
     name: Lint YAML
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: yaml-lint
         uses: ibiqlik/action-yamllint@v3
         with:
@@ -130,7 +130,7 @@ jobs:
     name: Lint JSON
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: json-syntax-check
         uses: limitusus/json-syntax-check@v1
         with:
