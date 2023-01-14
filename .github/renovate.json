@@ -4,6 +4,8 @@
   "labels": [ "Dependencies 📦", "PHP 🐘"],
   "recreateClosed": true,
   "composerIgnorePlatformReqs": null,
+  "allowScripts": true,
+  "allowPlugins": true,
   "enabledManagers": [
     "composer"
   ],
