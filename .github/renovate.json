@@ -3,6 +3,7 @@
   "extends": ["config:base", ":widenPeerDependencies", ":rebaseStalePrs", ":prHourlyLimitNone", ":prConcurrentLimitNone", "group:phpstan", ":prNotPending"],
   "labels": [ "Dependencies 📦", "PHP 🐘"],
   "recreateClosed": true,
+  "composerIgnorePlatformReqs": null,
   "enabledManagers": [
     "composer"
   ],
