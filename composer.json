@@ -21,7 +21,7 @@
   },
   "require-dev": {
     "ext-pcntl": "*",
-    "thecodingmachine/safe": "^1.3.3",
+    "thecodingmachine/safe": "^2.5.0",
     "wyrihaximus/async-test-utilities": "^4.0.7"
   },
   "config": {
