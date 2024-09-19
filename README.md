@@ -12,7 +12,7 @@
 To install via [Composer](http://getcomposer.org/), use the command below, it will automatically detect the latest version and bind it with `^`.
 
 ```
-composer require react-inspector/event-loop 
+composer require react-inspector/event-loop
 ```
 
 ## Contributing ##
@@ -21,7 +21,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## License ##
 
-Copyright 2020 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
+Copyright 2024 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

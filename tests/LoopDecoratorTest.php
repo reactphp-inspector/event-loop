@@ -4,369 +4,205 @@ declare(strict_types=1);
 
 namespace ReactInspector\Tests\EventLoop;
 
-use Prophecy\Argument;
+use Mockery;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use ReactInspector\EventLoop\LoopDecorator;
 use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
+use WyriHaximus\Metrics\Configuration;
+use WyriHaximus\Metrics\InMemory\Registry;
+use WyriHaximus\Metrics\Printer\Prometheus;
 
 use const SIGINT;
 
-/** @internal */
 final class LoopDecoratorTest extends AsyncTestCase
 {
     private int $signal = -1;
 
-    public function testAddReadStream(): void
+    /** @test */
+    public function addReadStream(): void
     {
-        $called = [
-            'listener' => false,
-            'addReadStream' => false,
-            'readStreamTick' => false,
-        ];
         $stream = 'abc';
 
-        $loopProphecy  = $this->prophesize(LoopInterface::class);
-        $loop          = $loopProphecy->reveal();
-        $decoratedLoop = new LoopDecorator($loop);
+        $loop          = Mockery::mock(LoopInterface::class);
+        $registry      = new Registry(Configuration::create());
+        $decoratedLoop = new LoopDecorator($loop, $registry);
 
-        // phpcs:disable
-        $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $decoratedLoop): void {
+        $listener = static function ($passedStream, $passedLoop) use ($stream, $decoratedLoop): void {
             self::assertSame($stream, $passedStream);
             self::assertSame($decoratedLoop, $passedLoop);
-            $called['listener'] = true;
         };
+        $loop->shouldReceive('addReadStream')->withArgs(static function ($stream, callable $listener) use ($decoratedLoop): bool {
+            $listener($stream, $decoratedLoop);
 
-        $loopProphecy->addReadStream($stream, Argument::type('callable'))->shouldBeCalled()->will(function (array $args) use ($loop): void {
-            [$stream, $listener] = $args;
-            $listener($stream, $loop);
+            return true;
         });
-        // phpcs:enable
+        $loop->shouldReceive('removeReadStream')->with($stream);
 
-        $decoratedLoop->on('addReadStream', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            self::assertSame($stream, $passedStream);
-            self::assertSame($listener, $passedListener);
-            $called['addReadStream'] = true;
-        });
-        $decoratedLoop->on('readStreamTick', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            self::assertSame($stream, $passedStream);
-            self::assertSame($listener, $passedListener);
-            $called['readStreamTick'] = true;
-        });
+        self::assertStringNotContainsString('react_event_loop_stream_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringNotContainsString('react_event_loop_streams', $registry->print(new Prometheus()));
 
-        /**
-         * @phpstan-ignore-next-line
-         */
+        /** @phpstan-ignore-next-line */
         $decoratedLoop->addReadStream($stream, $listener);
 
-        foreach ($called as $key => $call) {
-            self::assertTrue($call, $key);
-        }
-    }
+        self::assertStringContainsString('react_event_loop_stream_ticks_total{kind="read"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_streams{kind="read"} 1', $registry->print(new Prometheus()));
 
-    public function testAddWriteStream(): void
-    {
-        $called = [
-            'listener' => false,
-            'addWriteStream' => false,
-            'writeStreamTick' => false,
-        ];
-        $stream = 'abc';
-
-        $loopProphecy  = $this->prophesize(LoopInterface::class);
-        $loop          = $loopProphecy->reveal();
-        $decoratedLoop = new LoopDecorator($loop);
-
-        // phpcs:disable
-        $listener = function ($passedStream, $passedLoop) use (&$called, $stream, $decoratedLoop): void {
-            self::assertSame($stream, $passedStream);
-            self::assertSame($decoratedLoop, $passedLoop);
-            $called['listener'] = true;
-        };
-
-        $loopProphecy->addWriteStream($stream, Argument::type('callable'))->shouldBeCalled()->will(function (array $args) use ($loop): void {
-            [$stream, $listener] = $args;
-            $listener($stream, $loop);
-        });
-        // phpcs:enable
-
-        $decoratedLoop->on('addWriteStream', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            self::assertSame($stream, $passedStream);
-            self::assertSame($listener, $passedListener);
-            $called['addWriteStream'] = true;
-        });
-        $decoratedLoop->on('writeStreamTick', static function ($passedStream, $passedListener) use (&$called, $stream, $listener): void {
-            self::assertSame($stream, $passedStream);
-            self::assertSame($listener, $passedListener);
-            $called['writeStreamTick'] = true;
-        });
-
-        /**
-         * @phpstan-ignore-next-line
-         */
-        $decoratedLoop->addWriteStream($stream, $listener);
-
-        foreach ($called as $key => $call) {
-            self::assertTrue($call, $key);
-        }
-    }
-
-    public function testRemoveReadStream(): void
-    {
-        $called = false;
-        $stream = 'abc';
-
-        $loopProphecy = $this->prophesize(LoopInterface::class);
-        $loopProphecy->removeReadStream($stream)->shouldBeCalled();
-        $loop          = $loopProphecy->reveal();
-        $decoratedLoop = new LoopDecorator($loop);
-
-        $decoratedLoop->on('removeReadStream', static function ($passedStream) use (&$called, $stream): void {
-            self::assertSame($stream, $passedStream);
-            $called = true;
-        });
-
-        /**
-         * @phpstan-ignore-next-line
-         */
+        /** @phpstan-ignore-next-line */
         $decoratedLoop->removeReadStream($stream);
 
-        self::assertTrue($called);
+        self::assertStringContainsString('react_event_loop_stream_ticks_total{kind="read"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_streams{kind="read"} 0', $registry->print(new Prometheus()));
     }
 
-    public function testRemoveWriteStream(): void
+    /** @test */
+    public function addWriteStream(): void
     {
-        $called = false;
         $stream = 'abc';
 
-        $loopProphecy = $this->prophesize(LoopInterface::class);
-        $loopProphecy->removeWriteStream($stream)->shouldBeCalled();
-        $loop          = $loopProphecy->reveal();
-        $decoratedLoop = new LoopDecorator($loop);
+        $loop          = Mockery::mock(LoopInterface::class);
+        $registry      = new Registry(Configuration::create());
+        $decoratedLoop = new LoopDecorator($loop, $registry);
 
-        $decoratedLoop->on('removeWriteStream', static function ($passedStream) use (&$called, $stream): void {
+        $listener = static function ($passedStream, $passedLoop) use ($stream, $decoratedLoop): void {
             self::assertSame($stream, $passedStream);
-            $called = true;
-        });
+            self::assertSame($decoratedLoop, $passedLoop);
+        };
+        $loop->shouldReceive('addWriteStream')->withArgs(static function ($stream, callable $listener) use ($decoratedLoop): bool {
+            $listener($stream, $decoratedLoop);
 
-        /**
-         * @phpstan-ignore-next-line
-         */
+            return true;
+        });
+        $loop->shouldReceive('removeWriteStream')->with($stream);
+
+        self::assertStringNotContainsString('react_event_loop_stream_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringNotContainsString('react_event_loop_streams', $registry->print(new Prometheus()));
+
+        /** @phpstan-ignore-next-line */
+        $decoratedLoop->addWriteStream($stream, $listener);
+
+        self::assertStringContainsString('react_event_loop_stream_ticks_total{kind="write"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_streams{kind="write"} 1', $registry->print(new Prometheus()));
+
+        /** @phpstan-ignore-next-line */
         $decoratedLoop->removeWriteStream($stream);
 
-        self::assertTrue($called);
+        self::assertStringContainsString('react_event_loop_stream_ticks_total{kind="write"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_streams{kind="write"} 0', $registry->print(new Prometheus()));
     }
 
-    public function testAddTimer(): void
+    /** @test */
+    public function addTimer(): void
     {
         $loop          = Loop::get();
-        $decoratedLoop = new LoopDecorator($loop);
-
-        $called = [
-            'listener' => false,
-            'addTimer' => false,
-            'timerTick' => false,
-        ];
+        $registry      = new Registry(Configuration::create());
+        $decoratedLoop = new LoopDecorator($loop, $registry);
 
         $interval = 0.123;
-        $listener = static function ($timer) use (&$called): void {
-            self::assertInstanceOf(TimerInterface::class, $timer);
-            $called['listener'] = true;
+        $listener = static function (): void {
         };
-        $decoratedLoop->on('addTimer', static function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener): void {
-            self::assertSame($interval, $passedInterval);
-            self::assertSame($listener, $passedListener);
-            self::assertInstanceOf(TimerInterface::class, $timer);
-            $called['addTimer'] = true;
-        });
-        $decoratedLoop->on('timerTick', static function ($passedInterval, $passedListener, $timer) use (&$called, $interval, $listener): void {
-            self::assertSame($interval, $passedInterval);
-            self::assertSame($listener, $passedListener);
-            self::assertInstanceOf(TimerInterface::class, $timer);
-            $called['timerTick'] = true;
-        });
+
+        self::assertStringNotContainsString('react_event_loop_timer_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringNotContainsString('react_event_loop_timers', $registry->print(new Prometheus()));
 
         $decoratedLoop->addTimer($interval, $listener);
 
+        self::assertStringNotContainsString('react_event_loop_timer_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_timers{kind="one-off"} 1', $registry->print(new Prometheus()));
+
         $decoratedLoop->run();
 
-        foreach ($called as $key => $call) {
-            self::assertTrue($call, $key);
-        }
+        self::assertStringContainsString('react_event_loop_timer_ticks_total{kind="one-off"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_timers{kind="one-off"} 0', $registry->print(new Prometheus()));
     }
 
-    public function testAddPeriodicTimer(): void
+    /** @test */
+    public function addPeriodicTimer(): void
     {
         $loop          = Loop::get();
-        $decoratedLoop = new LoopDecorator($loop);
-
-        $called = [
-            'listener' => false,
-            'addPeriodicTimer' => false,
-            'periodicTimerTick' => false,
-        ];
+        $registry      = new Registry(Configuration::create());
+        $decoratedLoop = new LoopDecorator($loop, $registry);
 
         $interval = 0.123;
-        $listener = static function ($timer) use (&$called, $loop): void {
+        $listener = static function ($timer) use ($decoratedLoop): void {
             self::assertInstanceOf(TimerInterface::class, $timer);
-            $called['listener'] = true;
-            $loop->cancelTimer($timer);
+
+            $decoratedLoop->cancelTimer($timer);
         };
-        $decoratedLoop->on('addPeriodicTimer', static function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener): void {
-            self::assertSame($interval, $passedInterval);
-            self::assertSame($listener, $passedListener);
-            self::assertInstanceOf(TimerInterface::class, $passedTimer);
-            $called['addPeriodicTimer'] = true;
-        });
-        $decoratedLoop->on('periodicTimerTick', static function ($passedInterval, $passedListener, $passedTimer) use (&$called, $interval, $listener): void {
-            self::assertSame($interval, $passedInterval);
-            self::assertSame($listener, $passedListener);
-            self::assertInstanceOf(TimerInterface::class, $passedTimer);
-            $called['periodicTimerTick'] = true;
-        });
+
+        self::assertStringNotContainsString('react_event_loop_timer_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringNotContainsString('react_event_loop_timers', $registry->print(new Prometheus()));
 
         $decoratedLoop->addPeriodicTimer($interval, $listener);
 
+        self::assertStringNotContainsString('react_event_loop_timer_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_timers{kind="periodic"} 1', $registry->print(new Prometheus()));
+
         $decoratedLoop->run();
 
-        foreach ($called as $key => $call) {
-            self::assertTrue($call, $key);
-        }
+        self::assertStringContainsString('react_event_loop_timer_ticks_total{kind="periodic"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_timers{kind="periodic"} 0', $registry->print(new Prometheus()));
     }
 
-    public function testCancelTimer(): void
+    /** @test */
+    public function futureTick(): void
     {
-        $timer = $this->prophesize(TimerInterface::class)->reveal();
-
-        $loop = $this->prophesize(LoopInterface::class);
-        $loop->cancelTimer($timer)->shouldBeCalled();
-
-        $decoratedLoop = new LoopDecorator($loop->reveal());
-
-        $called = false;
-        $decoratedLoop->on('cancelTimer', static function ($passedTimer) use (&$called, $timer): void {
-            self::assertSame($timer, $passedTimer);
-            $called = true;
-        });
-
-        $decoratedLoop->cancelTimer($timer);
-
-        self::assertTrue($called);
-    }
-
-    public function testFutureTick(): void
-    {
-        $loop = $this->prophesize(LoopInterface::class);
-
-        // phpcs:disable
-        $listener = function () use (&$called): void {
-            $called['listener'] = true;
+        $listener = static function (): void {
         };
 
-        $loop->futureTick(Argument::type('callable'))->shouldBeCalled()->will(function ($args) use ($loop): void {
-            [$listener] = $args;
+        $loop = Mockery::mock(LoopInterface::class);
+        $loop->shouldReceive('futureTick')->withArgs(static function (callable $listener) use ($loop): bool {
             $listener($loop);
-        });
-        // phpcs:enable
 
-        $decoratedLoop = new LoopDecorator($loop->reveal());
-
-        $called = [
-            'listener' => false,
-            'futureTick' => false,
-            'futureTickTick' => false,
-        ];
-
-        $decoratedLoop->on('futureTick', static function ($passedListener) use (&$called, $listener): void {
-            self::assertSame($listener, $passedListener);
-            $called['futureTick'] = true;
+            return true;
         });
-        $decoratedLoop->on('futureTickTick', static function ($passedListener) use (&$called, $listener): void {
-            self::assertSame($listener, $passedListener);
-            $called['futureTickTick'] = true;
-        });
+
+        $registry      = new Registry(Configuration::create());
+        $decoratedLoop = new LoopDecorator($loop, $registry);
+
+        self::assertStringNotContainsString('react_event_loop_future_tick_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringNotContainsString('react_event_loop_future_ticks', $registry->print(new Prometheus()));
 
         $decoratedLoop->futureTick($listener);
 
-        foreach ($called as $key => $call) {
-            self::assertTrue($call, $key);
-        }
+        self::assertStringContainsString('react_event_loop_future_tick_ticks_total 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_future_ticks 0', $registry->print(new Prometheus()));
     }
 
-    public function testSignal(): void
+    /** @test */
+    public function signal(): void
     {
         $func = function (int $signal): void {
             self::assertNotSame($this->signal, $signal);
         };
 
-        $loop = $this->prophesize(LoopInterface::class);
-        // phpcs:disable
-        $loop->addSignal(SIGINT, Argument::type('callable'))->shouldBeCalled()->will(function ($args): void {
-            [$signal, $listener] = $args;
-            $listener($signal);
-        });
-        // phpcs:enable
-        $loop->removeSignal(SIGINT, Argument::type('callable'))->shouldBeCalled();
+        $loop = Mockery::mock(LoopInterface::class);
+        $loop->shouldReceive('addSignal')->withArgs(static function (int $signal, callable $listener): bool {
+            if ($signal !== SIGINT) {
+                return false;
+            }
 
-        $decoratedLoop = new LoopDecorator($loop->reveal());
-        $decoratedLoop->on('addSignal', $this->expectCallableOnce());
-        $decoratedLoop->on('signalTick', $this->expectCallableOnce());
-        $decoratedLoop->on('removeSignal', $this->expectCallableOnce());
+            $listener($signal);
+
+            return true;
+        });
+        $loop->shouldReceive('removeSignal')->with(SIGINT, Mockery::type('callable'));
+
+        $registry      = new Registry(Configuration::create());
+        $decoratedLoop = new LoopDecorator($loop, $registry);
+
+        self::assertStringNotContainsString('react_event_loop_signal_ticks_total', $registry->print(new Prometheus()));
+        self::assertStringNotContainsString('react_event_loop_signals', $registry->print(new Prometheus()));
 
         $decoratedLoop->addSignal(SIGINT, $func);
+
+        self::assertStringContainsString('react_event_loop_signal_ticks_total{signal="2"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_signals{signal="2"} 1', $registry->print(new Prometheus()));
+
         $decoratedLoop->removeSignal(SIGINT, $func);
-    }
 
-    public function testRun(): void
-    {
-        $loop = $this->prophesize(LoopInterface::class);
-        $loop->run()->shouldBeCalled();
-
-        $decoratedLoop = new LoopDecorator($loop->reveal());
-
-        $called = [
-            'runStart' => false,
-            'runDone' => false,
-        ];
-
-        foreach ($called as $key => $call) {
-            $eventKey = $key;
-            $decoratedLoop->on($eventKey, static function () use (&$called, $eventKey): void {
-                $called[$eventKey] = true;
-            });
-        }
-
-        $decoratedLoop->run();
-
-        foreach ($called as $key => $call) {
-            self::assertTrue($call, $key);
-        }
-    }
-
-    public function testStop(): void
-    {
-        $loop = $this->prophesize(LoopInterface::class);
-        $loop->stop()->shouldBeCalled();
-
-        $decoratedLoop = new LoopDecorator($loop->reveal());
-
-        $called = [
-            'stopStart' => false,
-            'stopDone' => false,
-        ];
-
-        foreach ($called as $key => $call) {
-            $eventKey = $key;
-            $decoratedLoop->on($eventKey, static function () use (&$called, $eventKey): void {
-                $called[$eventKey] = true;
-            });
-        }
-
-        $decoratedLoop->stop();
-
-        foreach ($called as $key => $call) {
-            self::assertTrue($call, $key);
-        }
+        self::assertStringContainsString('react_event_loop_signal_ticks_total{signal="2"} 1', $registry->print(new Prometheus()));
+        self::assertStringContainsString('react_event_loop_signals{signal="2"} 0', $registry->print(new Prometheus()));
     }
 }
