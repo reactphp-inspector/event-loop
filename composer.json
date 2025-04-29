@@ -13,7 +13,7 @@
     "php": "^8.2",
     "react-inspector/global-state": "^1",
     "react/event-loop": "^1.5",
-    "wyrihaximus/metrics": "^2.1",
+    "wyrihaximus/metrics": "^2.1 || ^3.0",
     "wyrihaximus/metrics-lazy-registry": "^2.0"
   },
   "require-dev": {
