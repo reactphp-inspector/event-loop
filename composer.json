@@ -18,7 +18,7 @@
   },
   "require-dev": {
     "ext-pcntl": "*",
-    "wyrihaximus/async-test-utilities": "^8"
+    "wyrihaximus/async-test-utilities": "^10"
   },
   "autoload": {
     "psr-4": {
